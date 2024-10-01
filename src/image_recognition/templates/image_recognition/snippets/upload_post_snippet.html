@@ -1,0 +1,37 @@
+<style type="text/css">
+	.card{
+		max-width: 700px;
+	}
+	.card-body{
+		padding: 20px;
+	}
+</style>
+
+{% block content %}
+
+<div class="container">
+	<div class="row">
+
+		<!-- HTML template for each image post -->
+		<div class="card m-auto">
+			<a href="{% url 'upload:detail' post.slug %}">
+				<img class="card-img-top" src="{{uploaded_image.image.url}}">
+			</a>
+			
+			<div class="card-body mt-2 mb-2">
+				<a href="{% url 'upload:detail' post.slug %}">
+					<h2 class="card-title">{{uploaded_image.title}}</h2>
+				</a>
+				<p class="card-text">{{uploaded_image.result|safe|truncatechars:180}}</p> <!-- REMOVE safe when moving to production -->
+				{% if uploaded_image.author == request.user %}
+					<a href="{% url 'image_recognition:edit' uploaded_image.slug %}" class="btn btn-primary">Update</a>
+				{% endif %}
+			</div>
+			<div class="card-footer text-muted">
+			  Updated on {{uploaded_image.date_updated}} by {{uploaded_image.author}}
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock content %}

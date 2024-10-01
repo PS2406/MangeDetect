@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style type="text/css">
+	.card{
+		max-width: 700px;
+	}
+	.container{
+		padding:20px;
+	}
+</style>
+
+<div class="container">
+	<div class="row">
+		<!-- Detailed image post -->
+		<div class="card m-auto">
+			<img class="card-img-top" src="{{uploaded_image.image.url}}">
+			<div class="card-body mt-2 mb-2">
+			  <h2 class="card-title">{{uploaded_image.title}}</h2>
+			  <p class="card-text">{{uploaded_image.result|safe}}</p>
+              {% if uploaded_image.author == request.user %}
+                <a href="{% url 'upload:edit' uploaded_image.slug %}" class="btn btn-primary">Update</a>
+              {% endif %}
+			</div>
+			<div class="card-footer text-muted">
+			  Posted on {{uploaded_image.date_uploaded}} by {{uploaded_image.author}}
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock content %}

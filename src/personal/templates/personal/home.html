@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - My Website{% endblock %}
+
+{% block content %}
+
+<div style="border: 2px solid #000;">
+    <h1>This is the home page.</h1>
+    <p>Content stuff in the body of the websites.</p>
+
+    <h3>Registered users: </h3>
+    {% for account in accounts %}
+        <p>{{account}}</p>
+    {% endfor %}
+    
+</div>
+
+{% endblock content %}
