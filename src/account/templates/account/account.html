@@ -1,57 +1,220 @@
 {% extends 'base.html' %}
-
+{% load user_tags %}
 
 {% block content %}
-
-<h2>Account</h2>
-<form method="post">{% csrf_token %}
-    {% for field in account_form %}
-        <p>
-            {{field.label_tag}}
-            {{field}}
-
-            {% if field.help_text %}
-                <small style="color: grey;">{{field.help_text}}</small>
-            {% endif %}
-        </p>
-    {% endfor %}
-    
-    {% for field in account_form %}
-        {% for error in field.errors %}
-            <p style="color: red;">{{error}}</p>
-        {% endfor %}
-    {% endfor %}
-
-    {% if account_form.non_field_errors %}
-        <div style="color:red;">
-            <p>{{account_form.non_field_errors}}</p>
-        </div>
-    {% endif %}
-    <button type="submit">Save Changes</button>
-</form>
-
-<div class="d-flex flex-column">
-    <a class="m-auto" href="{% url 'password_change' %}">Change password</a>
-</div>
-
-<!-- Displays the user's uploaded images below where they can edit their own account details. -->
-<div class="container mt-4 p-4">
-    <div class="row">
-      <div class="uploaded-images">
-        <h3 class="mb-3 font-weight-normal">Image posts:</h3>
-        {% if uploaded_images %}
-          <ul class="list-group">
-          {% for post in uploaded_images %}
-            <a href="{% url 'image_recognition:detail' post.slug %}" style="text-decoration: none;">
-              <li class="list-group-item">{{post}}</li>
-            </a>
-          {% endfor %}
-          </ul>
-        {% else %}
-          <p>You have no images uploaded. Create a post <a href="{% url 'image_recognition:upload' %}">here</a>.</p>
-        {% endif %}
-      </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body, html {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        .banner {
+            height: 100px; /* Adjust height as needed */
+            background-image: url('/static/leftsidebg.jpg'); /* Adjust path as necessary */
+            background-size: cover;
+            background-position: center;
+        }
+        .account-side {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items at the top */
+            background-color: #f0f0f0;
+            height: calc(100% - 100px); /* Adjusts height based on banner */
+            padding: 1rem; /* Add padding to the sides */
+        }
+        .account-container {
+            background-color: white;
+            padding: 2rem; /* Adjusted padding */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+        h1 {
+            margin-top: 0; /* Removed top margin */
+            text-align: left;
+            color: #000000;
+        }
+        h3 {
+            color: #6b6360;
+            padding: 0;
+            margin-top: 15px;
+            margin-bottom: 0;
+        }
+        input {
+            height: 38px; /* Increased height for better usability */
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background-color: #942509;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            height: 40px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #571504;
+        }
+        .login-link {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background-color: #942509;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .login-link:hover {
+            background-color: #571504;
+        }
+        .uploaded-images {
+            margin-top: 2rem;
+            max-height: 300px; /* Set maximum height for scrolling */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+        .back-button {
+            display: inline-block;  
+            padding: 10px 20px;    
+            margin-top: 20px;      
+            background-color: #942509; 
+            color: white;          
+            border-radius: 6px;    
+            text-decoration: none;   
+            transition: background-color 0.3s; 
+            font-size: 16px;       
+        }
+        .back-button:hover {
+            background-color: #6b6360; 
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        nav ul {
+          list-style-type: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+        }
+        nav ul li {
+            margin-left: 2rem;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #6b6360;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        nav ul li a:hover {
+            color: #942509;
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <h1 style="text-align: center; position: relative; color: #FFFFFF; font-size: 65px; margin-top: 50px;">Account</h1>
     </div>
-  </div>
+    <div class="account-side">
+        <div class="account-container">
+            <h1>Account Details</h1>
+            
+            <!-- Tabs for Account Details -->
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="false">View History</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" id="update-tab" data-toggle="tab" href="#update" role="tab" aria-controls="update" aria-selected="true">Update Details</a>
+                </li>
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link" id="admin-tab" data-toggle="tab" href="#admin" role="tab" aria-controls="admin" aria-selected="false">Admin Dashboard</a>
+                </li>
+                {% endif %}
+            </ul>
 
+            <div class="tab-content" id="myTabContent">
+                <!-- Update Details Tab -->
+                <div class="tab-pane fade show active" id="update" role="tabpanel" aria-labelledby="update-tab">
+                    <form method="post">{% csrf_token %}
+                        {% for field in account_form %}
+                            <h3>{{ field.label }}</h3>
+                            {% if field.name == "email" %}
+                                <p>{{ field.value }}</p>  <!-- Display email as plain text -->
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p style="color: red;">{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                        <button type="submit">Save Changes</button>
+                    </form>
+                    
+                    <div class="d-flex flex-column">
+                        <a class="login-link m-auto" href="{% url 'password_change' %}">Change password</a>
+                    </div>
+                </div>
+                
+                <!-- View History Tab -->
+                <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                    <div class="uploaded-images">
+                        <h3 class="mb-3 font-weight-normal">Image posts:</h3>
+                        {% if uploaded_images %}
+                            <ul class="list-group">
+                            {% for post in uploaded_images %}
+                                <a href="{% url 'image_recognition:detail' post.slug %}" style="text-decoration: none;">
+                                    <li class="list-group-item">{{ post }}</li>
+                                </a>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>You have no images uploaded. Create a post <a href="{% url 'image_recognition:upload' %}">here</a>.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Admin Dashboard Tab (only visible to admin users) -->
+                {% if user.is_staff %}
+                <div class="tab-pane fade" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+                    <h3>Admin Dashboard</h3>
+                    <b><p>This page should only be accessible and seen by a staff/admin user. If not, please contact the website administrators.</p></b>
+
+                    
+                    <a class="nav-link">Registered Users: {% get_user_count %}</a>
+                    
+
+                    <p>Access the Django admin dashboard to manage the website.</p>
+                    <a href="/admin/" class="btn btn-primary">Go to Admin Dashboard</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Include jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
 {% endblock content %}

@@ -8,8 +8,26 @@ import torch
 import torchvision.models as models
 from torchvision import transforms
 from PIL import Image
-import io
-from torch.optim.lr_scheduler import StepLR
+from torchvision.models import ResNet18_Weights
+from django.core.exceptions import PermissionDenied
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_http_methods
+from django.views import View
+
+def rate_limit(key_prefix, limit, period):
+    def decorator(fn):
+        def wrapper(request, *args, **kwargs):
+            key = f"{key_prefix}:{request.user.id if request.user.is_authenticated else request.META['REMOTE_ADDR']}"
+            count = cache.get(key, 0)
+            
+            if count >= limit:
+                raise PermissionDenied("Rate limit exceeded. Please try again later.")
+            
+            cache.set(key, count + 1, period)
+            return fn(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 # Define a simple class mapping
 class_mapping = {
@@ -19,27 +37,39 @@ class_mapping = {
 
 # Load the ResNet model (do this at startup)
 def load_model():
-    # Use weights parameter instead of pretrained
-    model = models.resnet101(weights=models.ResNet101_Weights.DEFAULT)
-    num_ftrs = model.fc.in_features
-    model.fc = torch.nn.Sequential(
-        torch.nn.Dropout(0.5),  # Add dropout layer as in training
-        torch.nn.Linear(num_ftrs, len(class_mapping))  # 2 classes: Normal and Mange
-    )
+    model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
     
-    # Load your custom weights if you have them
-    # If you're using a custom model, you might need to adjust this part
+    # Modify the final fully connected layer for your binary classification
+    num_ftrs = model.fc.in_features
+    model.fc = torch.nn.Linear(num_ftrs, len(class_mapping))  # 2 classes: Normal, Mange
+    
+    # Load your custom weights
     try:
-        state_dict = torch.load('wombat_mange_model_v4.pth', weights_only=True)
-        model.load_state_dict(state_dict)
+        state_dict = torch.load('wombat_mange_classification_model_v1.4.pth', map_location=torch.device('cpu'))
+        
+        # Remove the fc layer weights to avoid size mismatch
+        state_dict = {k: v for k, v in state_dict.items() if not k.startswith("fc")}
+        
+        # Load remaining weights into the model
+        model.load_state_dict(state_dict, strict=False)
+        print("Custom model weights loaded successfully (fc layer excluded).")
     except FileNotFoundError:
         print("Custom model weights not found. Using pre-trained weights.")
     except RuntimeError as e:
         print(f"Error loading custom weights: {e}")
         print("Using pre-trained weights instead.")
     
-    model.eval()
+    # Freeze all layers except the final fully connected layer
+    for name, param in model.named_parameters():
+        if "fc" in name:  # Unfreeze the final classification layer
+            param.requires_grad = True
+        else:
+            param.requires_grad = False
+    
+    model.eval()  # Set the model to evaluation mode
     return model
+
+
 
 # Global variable to store the model
 image_model = load_model()
@@ -47,18 +77,15 @@ image_model = load_model()
 def predict_image(image):
     if image_model is None:
         return "Model not loaded", 0.0
+    
     # Preprocess the image
     preprocess = transforms.Compose([
-       transforms.Resize((224, 224)),
-       transforms.RandomHorizontalFlip(),
-       transforms.RandomVerticalFlip(),
-       transforms.RandomRotation(20),
-       transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-       transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-       transforms.RandomPerspective(distortion_scale=0.2, p=0.5),
-       transforms.ToTensor(),
-       transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
+    
     input_tensor = preprocess(image)
     input_batch = input_tensor.unsqueeze(0)
 
@@ -79,6 +106,7 @@ def predict_image(image):
 # Function to train the model.
    
 
+@rate_limit('image_upload', 100, 3600)  # Rate limited to: 100 uploads per hour
 def upload_image_view(request):
     context = {}
     user = request.user

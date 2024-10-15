@@ -20,15 +20,15 @@
 			
 			<div class="card-body mt-2 mb-2">
 				<a href="{% url 'upload:detail' post.slug %}">
-					<h2 class="card-title">{{uploaded_image.title}}</h2>
+					<h2 class="card-title">{{uploaded_image.id}}</h2>
 				</a>
-				<p class="card-text">{{uploaded_image.result|safe|truncatechars:180}}</p> <!-- REMOVE safe when moving to production -->
+				<p class="card-text">{{uploaded_image.result|truncatechars:180}}</p> <!-- REMOVE safe when moving to production -->
 				{% if uploaded_image.author == request.user %}
 					<a href="{% url 'image_recognition:edit' uploaded_image.slug %}" class="btn btn-primary">Update</a>
 				{% endif %}
 			</div>
 			<div class="card-footer text-muted">
-			  Updated on {{uploaded_image.date_updated}} by {{uploaded_image.author}}
+			  Uploaded on {{uploaded_image.date_uploaded}} by {{uploaded_image.author}}
 			</div>
 		</div>
 	</div>

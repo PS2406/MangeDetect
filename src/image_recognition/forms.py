@@ -5,18 +5,18 @@ class UploadImageForm(forms.ModelForm):
 
     class Meta:
         model = UploadedImage
-        fields = ['title', 'result', 'image']
+        fields = ['result', 'image']
 
 
 class UpdateUploadImageForm(forms.ModelForm):
 
     class Meta:
         model = UploadedImage
-        fields = ['title', 'result', 'image']
+        fields = ['result', 'image']
 
     def save(self, commit=True):
         uploaded_image = self.instance
-        uploaded_image.title = self.cleaned_data['title']
+        #uploaded_image.title = self.cleaned_data['title']
         uploaded_image.result = self.cleaned_data['result']
 
         # If new image is set, change it. If not, leave it.

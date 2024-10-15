@@ -1,48 +1,173 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
 <style type="text/css">
-  .create-form {
-	    width: 100%;
-	    max-width: 100%;
-	    padding: 15px;
-	    margin: auto;
-  	}
-
-  	.submit-button{
-  		max-width: 200px;
-  	}
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        background-color: white;
+    }
+    header {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .logo img {
+        height: 40px;
+    }
+    nav ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+    nav ul li {
+        margin-left: 2rem;
+    }
+    nav ul li a {
+        text-decoration: none;
+        color: #6b6360;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    nav ul li a:hover {
+        color: #942509;
+        background-color: #e9ecef;
+    }
+    .create-form {
+        width: 100%;
+        max-width: 100%;
+        padding: 15px;
+        margin: auto;
+    }
+    .submit-button {
+        max-width: 200px;
+        background-color: #942509;
+        color: white;
+        padding: 15px 32px;
+        border-radius: 6px;
+        border: none;
+        transition: background-color 0.3s;
+    }
+    .submit-button:hover {
+        background-color: #6b6360;
+    }
+    .drop-zone {
+        background-color: rgba(145, 131, 138, 0.22);
+        color: #484a4d;
+        border: 2px dashed #ccc;
+        border-radius: 20px;
+        width: 80%;
+        height: 200px; /* Adjust height as needed */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        text-align: center;
+        cursor: pointer; /* Indicate that this area is clickable */
+    }
+    .drop-zone.highlight {
+        border-color: #942509; /* Highlight color when dragging */
+    }
+    .preview-image {
+        margin-top: 10px;
+        max-width: 100%; /* Ensure the preview image is responsive */
+        height: auto;
+    }
+    .back-button {
+        display: inline-block; /* Use inline-block to respect margins */
+        padding: 10px 20px;    
+        background-color: #942509; 
+        color: white;          
+        border-radius: 6px;    
+        text-decoration: none;   
+        transition: background-color 0.3s; 
+        font-size: 16px;  
+        margin-bottom: 20px; /* Space below the back button */
+    }
+    .back-button:hover {
+        background-color: #6b6360; 
+    }
 </style>
 
+<h1>Upload Image</h1>
+
+<!-- Back button -->
 <div class="container">
-	<div class="row">
-		<div class="col-lg-7 offset-lg-1">
-			<form class="create-form" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="row">
+        <div class="col-lg-7 offset-lg-1">
+            <form class="create-form" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <!-- Drag and Drop Zone -->
+                <div id="drop-zone" class="drop-zone">
+                    <p>Drag & drop an image here or click to select one</p>
+                    <input type="file" name="image" id="id_image" accept="image/*" required style="display:none;">
+                </div>
+                <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none;">
 
-				<!-- title -->
-				<div class="form-group">
-					<label for="id_title">Title</label>
-					<input class="form-control" type="text" name="title" id="id_title" placeholder="Title" required autofocus>
-				</div>
-
-				<!-- Body -->
-				<div class="form-group">
-					<label for="id_body">Result</label>
-					<textarea class="form-control" rows="10" type="text" name="body" id="id_body" placeholder="Result:" required></textarea>
-				</div>
-
-				<!-- Image -->
-				<div class="form-group">
-					<label for="id_image">Image</label>
-					<input  type="file" name="image" id="id_image" accept="image/*" required>
-				</div>
-
-				<!-- Submit btn -->
-				<button class="submit-button btn btn-lg btn-primary btn-block" type="submit">Upload</button>
-			</form>	
-		</div>
-	</div>
+                <!-- Submit button -->
+                <button class="submit-button btn btn-lg btn-primary btn-block" type="submit">Upload</button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('id_image');
+    const preview = document.getElementById('preview');
+
+    // Handle drag over event
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('highlight');
+    });
+
+    // Handle drag leave event
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('highlight');
+    });
+
+    // Handle drop event
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('highlight');
+        const files = e.dataTransfer.files;
+
+        if (files.length > 0) {
+            fileInput.files = files; // Set the file input's files
+            previewFile(files[0]); // Preview the file
+        }
+    });
+
+    // Handle click event to open file dialog
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Handle file selection
+    fileInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files.length > 0) {
+            previewFile(files[0]);
+        }
+    });
+
+    // Preview the selected or dropped file
+    function previewFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.style.display = 'block'; // Show the preview image
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
 
 {% endblock content %}

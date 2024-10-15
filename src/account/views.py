@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from account.forms import RegistrationForm, AccountAuthenticationForm, AccountUpdateForm
 from image_recognition.models import UploadedImage
+from django.http import JsonResponse
+from account.models import Account
 
 # Create your views here.
 
@@ -78,4 +80,8 @@ def account_view(request):
 
 def must_authenticate_view(request):
     return render(request, 'account/must_authenticate.html', {})
+
+def user_count(request):
+    count = Account.objects.count()
+    return JsonResponse({'count': count})
         

@@ -2,20 +2,119 @@
 {% load static %}
 
 {% block content %}
-<h1>Upload History</h1>
+<style type="text/css">
+    .card {
+        max-width: 700px;
+        margin: 20px auto; /* Center the card */
+        border: 1px solid #ccc; /* Border for the card */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow */
+        transition: box-shadow 0.3s; /* Smooth transition for hover effect */
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Darker shadow on hover */
+    }
+    
+    .card-body {
+        padding: 20px;
+        background-color: #f8f9fa; /* Light background for card body */
+    }
+    
+    .card-title {
+        color: #942509; /* Title color */
+    }
+    
+    .card-footer {
+        background-color: #e9ecef; /* Light footer background */
+        border-top: 1px solid #ccc; /* Top border for footer */
+    }
+    
+    .btn-primary {
+        background-color: #942509; /* Match button color with theme */
+        border: none; /* Remove border */
+    }
+    
+    .btn-primary:hover {
+        background-color: #6b6360; /* Darker shade on hover */
+    }
+
+    nav ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+    nav ul li {
+        margin-left: 2rem;
+    }
+    nav ul li a {
+        text-decoration: none;
+        color: #6b6360;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    nav ul li a:hover {
+        color: #942509;
+        background-color: #e9ecef;
+    }
+
+    .back-button {
+        display: inline-block; /* Use inline-block to respect margins */
+        padding: 10px 20px;    
+        background-color: #942509; 
+        color: white;          
+        border-radius: 6px;    
+        text-decoration: none;   
+        transition: background-color 0.3s; 
+        font-size: 16px;  
+        margin-bottom: 20px; /* Space below the back button */
+    }
+    .back-button:hover {
+        background-color: #6b6360; 
+    }
+
+    /* Scrollbar styles for WebKit browsers */
+    ::-webkit-scrollbar {
+        width: 8px; /* Width of the scrollbar */
+        height: 8px; /* Height of the scrollbar for horizontal scrolling */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #942509; /* Color of the scrollbar thumb */
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #f1f1f1; /* Color of the scrollbar track */
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    /* Scrollbar styles for Firefox */
+    * {
+        scrollbar-width: thin; /* Use 'thin' for a thin scrollbar */
+        scrollbar-color: #942509 #f1f1f1; /* thumb color and track color */
+    }
+</style>
+
+<h1 class="text-center">Upload History</h1>
 
 <div class="container">
     <div class="row">
-        <p>test</p>
-        <!-- Uploaded image posts -->
-        {% for post in uploaded_image %}
-            <div class="blog-post-container">
-                {% include 'image_recognition/snippets/upload_post_snippet.html' with uploaded_image=post %}
-            </div>
-        {% empty %}
+        {% if uploaded_image %}
+            <!-- Uploaded image posts -->
+            {% for post in uploaded_image %}
+                <div class="col-lg-4 col-md-6"> <!-- Adjust columns for better layout -->
+                    <div class="blog-post-container">
+                        {% include 'image_recognition/snippets/upload_post_snippet.html' with uploaded_image=post %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
             <p>No images uploaded yet.</p>
-        {% endfor %}
-        <!-- End of posts-->
+        {% endif %}
+        <!-- End of posts -->
     </div>
 </div>
 {% endblock content %}
