@@ -9,7 +9,7 @@
         padding: 0;
         height: 100%;
         font-family: Arial, sans-serif;
-        background-color: white;
+        background-color: #f8f9fa;
     }
     header {
         background-color: #f8f9fa;
@@ -123,14 +123,15 @@
         background-color: #6b6360; 
     }
 </style>
-<h1>About Us</h1>
+<h1>Purpose</h1>
 <p>
-    The purpose of this website is to classify between wombats who have the symptons of mange automatically. <br>
+    The purpose of this website is to provide the ability to upload images of wombats, in which the website will detect if the wombat has symptons of mange or not. <br>
 </p>
 
-<h3> How does this work? </h3>
+<h1> How does this work? </h1>
 
 <p>
-    The website uses a custom resnet model which are trained on a number of sample data to discern the differences , which classifies between wombats with the symptons of mange or not. 
+    The website leverages PyTorch and ResNet, to create a custom model tailored to the classification of wombats. This is done by sampling data of wombats.
+    Through this model, we hope to help discern between wombats with and without the symptons of sarcoptic mange.
 </p>
 {% endblock %}

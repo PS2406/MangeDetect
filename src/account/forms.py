@@ -26,6 +26,8 @@ class AccountAuthenticationForm(forms.ModelForm):
                 raise forms.ValidationError("Invalid Login.")
             
 class AccountUpdateForm(forms.ModelForm):
+    # Make email uneditable and not required when updating form.
+    email = forms.EmailField(disabled=True, required=False)
 
     class Meta:
         model = Account

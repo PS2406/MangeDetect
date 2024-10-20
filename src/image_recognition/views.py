@@ -14,6 +14,12 @@ from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
 from django.views import View
+from django.http import HttpResponse
+import json
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple
+import io
 
 def rate_limit(key_prefix, limit, period):
     def decorator(fn):
@@ -104,39 +110,85 @@ def predict_image(image):
     return predicted_class, probability
 
 # Function to train the model.
-   
 
-@rate_limit('image_upload', 100, 3600)  # Rate limited to: 100 uploads per hour
+def process_single_image(image: Image.Image) -> Tuple[str, float]:
+    """Process a single image through the ResNet model."""
+    try:
+        prediction, probability = predict_image(image)
+        return prediction, probability
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return "Error", 0.0
+
+def process_uploaded_file(file: InMemoryUploadedFile) -> Tuple[Image.Image, str, float]:
+    """Process a single uploaded file and return the image and its prediction."""
+    image = Image.open(file)
+    prediction, probability = process_single_image(image)
+    return image, prediction, probability
+
+@rate_limit('image_upload', 300, 3600)  # Increased rate limit for multiple uploads
 def upload_image_view(request):
-    context = {}
-    user = request.user
-    if not user.is_authenticated:
+    if not request.user.is_authenticated:
         return redirect('must_authenticate')
     
-    form = UploadImageForm(request.POST or None, request.FILES or None)
-    if form.is_valid():
-        obj = form.save(commit=False)
-        author = Account.objects.filter(email=user.email).first()
-        obj.author = author
+    if request.method == 'POST':
+        files = request.FILES.getlist('images')
         
-        # Open the uploaded image
-        image = Image.open(request.FILES['image'])
+        if not files:
+            return JsonResponse({'error': 'No files uploaded'}, status=400)
         
-        # Get prediction and probability
-        prediction, probability = predict_image(image)
+        results = []
+        author = Account.objects.filter(email=request.user.email).first()
         
-        # Save prediction result
-        obj.result = f"Prediction: {prediction} (Confidence: {probability:.2f})"
-        obj.save()
+        # Process images in parallel using ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=min(len(files), 4)) as executor:
+            future_to_file = {executor.submit(process_uploaded_file, file): file 
+                            for file in files}
+            
+            for future in future_to_file:
+                file = future_to_file[future]
+                try:
+                    image, prediction, probability = future.result()
+                    
+                    # Create UploadedImage instance
+                    uploaded_image = UploadedImage(
+                        author=author,
+                        title=f"Upload {file.name}",
+                        image=file,
+                        result=f"Prediction: {prediction} (Confidence: {probability:.2f})"
+                    )
+                    uploaded_image.save()
+                    
+                    results.append({
+                        'filename': file.name,
+                        'prediction': prediction,
+                        'probability': probability,
+                        'slug': uploaded_image.slug
+                    })
+                    
+                except Exception as e:
+                    results.append({
+                        'filename': file.name,
+                        'error': str(e)
+                    })
         
-        form = UploadImageForm()
-    context['form'] = form
-    return render(request, "image_recognition/upload.html", context)
+        return JsonResponse({'results': results})
+    
+    return render(request, "image_recognition/upload.html", {})
 
+# Update the detail view to handle multiple images
 def detail_image_view(request, slug):
     context = {}
     uploaded_image = get_object_or_404(UploadedImage, slug=slug)
+    
+    # Get related images uploaded in the same batch
+    related_images = UploadedImage.objects.filter(
+        author=uploaded_image.author,
+        date_updated__date=uploaded_image.date_updated.date()
+    ).exclude(id=uploaded_image.id)[:5]
+    
     context['uploaded_image'] = uploaded_image
+    context['related_images'] = related_images
     return render(request, 'image_recognition/detail_image.html', context)
 
 def edit_image_view(request, slug):
@@ -172,7 +224,8 @@ def edit_image_view(request, slug):
     return render(request, 'image_recognition/edit_image.html', context)
 
 def upload_history_view(request):
-    uploaded_images = UploadedImage.objects.all().order_by('-date_updated')[:30] # Limits recent image posts to 30.
+    # Used selected_related to reduce database queries for faster loading of page.
+    uploaded_images = UploadedImage.objects.select_related('author').order_by('-date_updated')[:30] # Limits recent image posts to 30.
     
     # Pass the images to the template
     return render(request, 'image_recognition/upload_history.html', {'uploaded_image': uploaded_images})

@@ -86,6 +86,16 @@
         border-radius: 10px; /* Rounded corners */
     }
 
+    /* Hides the scrollbar buttons */
+    ::-webkit-scrollbar-button {
+        width: 0;
+        height: 0;
+        display: none;
+        background: none;
+        padding: 0;
+        border: none;
+    }
+
     ::-webkit-scrollbar-track {
         background-color: #f1f1f1; /* Color of the scrollbar track */
         border-radius: 10px; /* Rounded corners */
@@ -96,25 +106,107 @@
         scrollbar-width: thin; /* Use 'thin' for a thin scrollbar */
         scrollbar-color: #942509 #f1f1f1; /* thumb color and track color */
     }
+
+    .upload-list {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .upload-row {
+        border: 1px solid #dee2e6;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+    }
+    .upload-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+    }
+    .upload-details {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+    }
+    .upload-info {
+        flex-grow: 1;
+        margin-left: 20px;
+    }
+    .upload-actions {
+        min-width: 100px;
+        text-align: right;
+    }
+    .upload-metadata {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .result-text {
+        margin: 5px 0;
+        color: #333;
+    }
 </style>
 
 <h1 class="text-center">Upload History</h1>
 
 <div class="container">
-    <div class="row">
+    <div class="upload-list">
         {% if uploaded_image %}
-            <!-- Uploaded image posts -->
-            {% for post in uploaded_image %}
-                <div class="col-lg-4 col-md-6"> <!-- Adjust columns for better layout -->
-                    <div class="blog-post-container">
-                        {% include 'image_recognition/snippets/upload_post_snippet.html' with uploaded_image=post %}
+            {% if uploaded_image|length is not None %}
+                {# Handle queryset of multiple images #}
+                {% for post in uploaded_image %}
+                    <div class="upload-row">
+                        <div class="upload-details">
+                            <div class="upload-image-container">
+                                <a href="{% url 'upload:detail' post.slug %}">
+                                    <img class="upload-image" src="{{ post.image.url }}" alt="Uploaded image" loading="lazy">
+                                </a>
+                            </div>
+                            
+                            <div class="upload-info">
+                                <div class="result-text">{{ post.result|truncatechars:180 }}</div>
+                                <div class="upload-metadata">
+                                    Uploaded on {{ post.date_uploaded }} by {{ post.author }}
+                                </div>
+                            </div>
+                            
+                            <div class="upload-actions">
+                                {% if post.author == request.user %}
+                                    <a href="{% url 'image_recognition:edit' post.slug %}" class="btn btn-primary btn-sm">Update</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                {# Handle single image object #}
+                <div class="upload-row">
+                    <div class="upload-details">
+                        <div class="upload-image-container">
+                            <a href="{% url 'upload:detail' uploaded_image.slug %}">
+                                <img class="upload-image" src="{{ uploaded_image.image.url }}" alt="Uploaded image">
+                            </a>
+                        </div>
+                        
+                        <div class="upload-info">
+                            <div class="result-text">{{ uploaded_image.result|truncatechars:180 }}</div>
+                            <div class="upload-metadata">
+                                Uploaded on {{ uploaded_image.date_uploaded }} by {{ uploaded_image.author }}
+                            </div>
+                        </div>
+                        
+                        <div class="upload-actions">
+                            {% if uploaded_image.author == request.user %}
+                                <a href="{% url 'image_recognition:edit' uploaded_image.slug %}" class="btn btn-primary btn-sm">Update</a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            {% endfor %}
+            {% endif %}
         {% else %}
-            <p>No images uploaded yet.</p>
+            <div class="alert alert-info text-center">
+                No images uploaded yet.
+            </div>
         {% endif %}
-        <!-- End of posts -->
     </div>
 </div>
 {% endblock content %}

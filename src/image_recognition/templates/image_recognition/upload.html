@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block title %}Upload - MangeDetect{% endblock %}
+
 {% block content %}
 <style type="text/css">
     body, html {
@@ -7,7 +9,7 @@
         padding: 0;
         height: 100%;
         font-family: Arial, sans-serif;
-        background-color: white;
+        background-color: #f8f9fa;
     }
     header {
         background-color: #f8f9fa;
@@ -40,11 +42,29 @@
         color: #942509;
         background-color: #e9ecef;
     }
+    .upload-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .upload-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .preview-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
     .create-form {
         width: 100%;
-        max-width: 100%;
         padding: 15px;
-        margin: auto;
     }
     .submit-button {
         max-width: 200px;
@@ -54,6 +74,7 @@
         border-radius: 6px;
         border: none;
         transition: background-color 0.3s;
+        margin-top: 20px;
     }
     .submit-button:hover {
         background-color: #6b6360;
@@ -63,26 +84,37 @@
         color: #484a4d;
         border: 2px dashed #ccc;
         border-radius: 20px;
-        width: 80%;
-        height: 200px; /* Adjust height as needed */
+        width: 100%;
+        height: 300px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
         text-align: center;
-        cursor: pointer; /* Indicate that this area is clickable */
+        cursor: pointer;
     }
     .drop-zone.highlight {
-        border-color: #942509; /* Highlight color when dragging */
+        border-color: #942509;
     }
     .preview-image {
-        margin-top: 10px;
-        max-width: 100%; /* Ensure the preview image is responsive */
-        height: auto;
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .preview-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 300px;
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        padding: 20px;
     }
     .back-button {
-        display: inline-block; /* Use inline-block to respect margins */
+        display: inline-block;
         padding: 10px 20px;    
         background-color: #942509; 
         color: white;          
@@ -90,84 +122,311 @@
         text-decoration: none;   
         transition: background-color 0.3s; 
         font-size: 16px;  
-        margin-bottom: 20px; /* Space below the back button */
+        margin-bottom: 20px;
     }
     .back-button:hover {
         background-color: #6b6360; 
     }
+
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+        padding: 20px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .preview-item {
+        position: relative;
+        width: 100%;
+        background: #f8f9fa;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .preview-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    .prediction-overlay {
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    .prediction-text {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+    .confidence-bar {
+        height: 4px;
+        background: #e9ecef;
+        margin-top: 8px;
+        border-radius: 2px;
+    }
+    .confidence-fill {
+        height: 100%;
+        background: #942509;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #942509;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .error-message {
+        color: #dc3545;
+        padding: 8px;
+        margin-top: 8px;
+        background: #f8d7da;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    .result-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-right: 8px;
+    }
+    .result-badge.normal {
+        background: #28a745;
+        color: white;
+    }
+    .result-badge.mange {
+        background: #dc3545;
+        color: white;
+    }
 </style>
 
-<h1>Upload Image</h1>
+<h1 style="text-align:center;"><b>Upload Multiple Images</b></h1>
 
-<!-- Back button -->
-<div class="container">
-    <div class="row">
-        <div class="col-lg-7 offset-lg-1">
-            <form class="create-form" method="post" enctype="multipart/form-data">{% csrf_token %}
-                <!-- Drag and Drop Zone -->
-                <div id="drop-zone" class="drop-zone">
-                    <p>Drag & drop an image here or click to select one</p>
-                    <input type="file" name="image" id="id_image" accept="image/*" required style="display:none;">
-                </div>
-                <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none;">
+<div class="upload-container">
+    <!-- Left side: Upload section -->
+    <div class="upload-section">
+        <form id="upload-form" class="create-form">{% csrf_token %}
+            <div id="drop-zone" class="drop-zone">
+                <p>Drag & drop images here or click to select multiple images</p>
+                <input type="file" name="images" id="id_images" accept="image/*" multiple required style="display:none;">
+            </div>
+            <button class="submit-button btn btn-lg btn-primary btn-block" type="submit">Upload All</button>
+        </form>
+    </div>
 
-                <!-- Submit button -->
-                <button class="submit-button btn btn-lg btn-primary btn-block" type="submit">Upload</button>
-            </form>
+    <!-- Right side: Preview section -->
+    <div class="preview-section">
+        <div class="preview-grid" id="preview-grid">
+            <!-- Preview images will be inserted here -->
         </div>
     </div>
 </div>
 
 <script>
     const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('id_image');
-    const preview = document.getElementById('preview');
+    const fileInput = document.getElementById('id_images');
+    const previewGrid = document.getElementById('preview-grid');
+    const uploadForm = document.getElementById('upload-form');
+    let previewIndex = 0; // Keep track of total previews
 
-    // Handle drag over event
+    // Drag and drop handlers
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('highlight');
     });
 
-    // Handle drag leave event
     dropZone.addEventListener('dragleave', () => {
         dropZone.classList.remove('highlight');
     });
 
-    // Handle drop event
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('highlight');
         const files = e.dataTransfer.files;
-
+        
         if (files.length > 0) {
-            fileInput.files = files; // Set the file input's files
-            previewFile(files[0]); // Preview the file
+            fileInput.files = files;
+            previewFiles(files);
         }
     });
 
-    // Handle click event to open file dialog
     dropZone.addEventListener('click', () => {
         fileInput.click();
     });
 
-    // Handle file selection
     fileInput.addEventListener('change', (e) => {
         const files = e.target.files;
         if (files.length > 0) {
-            previewFile(files[0]);
+            previewFiles(files);
         }
     });
 
-    // Preview the selected or dropped file
-    function previewFile(file) {
+    function createPreviewItem(file, index) {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        previewItem.id = `preview-${index}`;
+        
+        const img = document.createElement('img');
+        img.className = 'preview-image';
+        img.alt = `Preview ${index + 1}`;
+        
+        const predictionOverlay = document.createElement('div');
+        predictionOverlay.className = 'prediction-overlay';
+        predictionOverlay.innerHTML = `
+            <p class="prediction-text">Awaiting upload...</p>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width: 0%"></div>
+            </div>
+        `;
+        
         const reader = new FileReader();
         reader.onload = (e) => {
-            preview.src = e.target.result;
-            preview.style.display = 'block'; // Show the preview image
+            img.src = e.target.result;
         };
         reader.readAsDataURL(file);
+        
+        previewItem.appendChild(img);
+        previewItem.appendChild(predictionOverlay);
+        return previewItem;
     }
+
+    function previewFiles(files) {
+        // Instead of clearing, we'll add new previews at the beginning
+        Array.from(files).forEach((file) => {
+            const previewItem = createPreviewItem(file, previewIndex);
+            // Insert at the beginning of the grid
+            previewGrid.insertBefore(previewItem, previewGrid.firstChild);
+            previewIndex++;
+        });
+    }
+
+    function updatePreviewWithResult(index, result) {
+        const previewItem = document.getElementById(`preview-${index}`);
+        if (!previewItem) return;
+
+        const predictionOverlay = previewItem.querySelector('.prediction-overlay');
+        const confidenceFill = previewItem.querySelector('.confidence-fill');
+        
+        // Remove loading overlay if it exists
+        const loadingOverlay = previewItem.querySelector('.loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+
+        if (result.error) {
+            predictionOverlay.innerHTML = `
+                <div class="error-message">${result.error}</div>
+            `;
+            return;
+        }
+
+        // Convert prediction to lowercase and normalize it
+        const prediction = result.prediction.toLowerCase().trim();
+        // Check if the prediction contains 'mange' anywhere in the string
+        const isMange = prediction.includes('mange');
+        const badgeClass = isMange ? 'mange' : 'normal';
+        
+        // For debugging - log the prediction value
+        console.log('Raw prediction:', result.prediction);
+        console.log('Processed prediction:', prediction);
+        console.log('Is mange:', isMange);
+
+        const confidencePercent = (result.probability * 100).toFixed(1);
+        
+        predictionOverlay.innerHTML = `
+            <p class="prediction-text">
+                <span class="result-badge ${badgeClass}">${result.prediction}</span>
+                Confidence: ${confidencePercent}%
+            </p>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width: ${confidencePercent}%"></div>
+            </div>
+        `;
+    }
+
+    function addLoadingOverlay(previewItem) {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = '<div class="spinner"></div>';
+        previewItem.appendChild(loadingOverlay);
+    }
+
+    function resetUploadForm() {
+        uploadForm.reset();
+        dropZone.classList.remove('highlight');
+    }
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const files = fileInput.files;
+        if (!files.length) return;
+
+        const startIndex = previewIndex - files.length;
+
+        // Add loading overlay to all preview items
+        Array.from(files).forEach((_, index) => {
+            const previewItem = document.getElementById(`preview-${startIndex + index}`);
+            if (previewItem) {
+                addLoadingOverlay(previewItem);
+            }
+        });
+
+        const formData = new FormData();
+        Array.from(files).forEach(file => {
+            formData.append('images', file);
+        });
+
+        try {
+            const response = await fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.results) {
+                data.results.forEach((result, index) => {
+                    updatePreviewWithResult(startIndex + index, result);
+                });
+            }
+
+            // Reset the form after successful upload
+            resetUploadForm();
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+            Array.from(files).forEach((_, index) => {
+                updatePreviewWithResult(startIndex + index, { 
+                    error: 'Failed to upload image. Please try again.' 
+                });
+            });
+        }
+    });
 </script>
 
 {% endblock content %}

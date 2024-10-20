@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 
 <!DOCTYPE html>
@@ -15,73 +14,77 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
         }
-
+        
         .container {
             display: flex;
-            height: 100%;
+            
         }
-
+        
         .image-side {
             flex: 1;
-            background-image: url('/static/leftsidebg.jpg'); /* Ensure this path is correct */
+            background-image: url('/static/leftsidebg.jpg'); /* Adjust path as necessary */
             background-size: cover;
             background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
-        .login-side {
+        
+        .signup-side {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             background-color: #f0f0f0;
         }
-
-        .login-container {
+        
+        .signup-container {
             background-color: white;
-            padding: 4rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            height: 100%;
+            max-width: 500px;
         }
-
+        
         h1 {
-            margin-top: 25%;
-            text-align: left;
-            color: #000000;
+            text-align: center;
+            color: #000; /* Changed to black */
+            font-size: 45px; /* Same size */
+            font-weight: 700; /* Slightly bolder */
+            margin: 0; /* Remove margin for better centering */
         }
-
+        
         h3 {
             color: #6b6360;
-            padding: 0px;
-            margin-top: 15px;
-            margin-bottom: 0%;
+            font-size: 18px;
+            padding: 0;
+            margin: 1rem 0 0.5rem;
         }
-
-        ul {
-            margin-bottom: 0px;
-            margin-right: 50%;
-            padding: 0px;
-            color: #706664;
-        }
-
+        
         form {
             display: flex;
             flex-direction: column;
-            padding: 0rem;
-            margin: 0%;
+            padding: 0;
+            margin: 0;
         }
-
+        
         input {
-            height: 18px;
+            height: 40px;
             margin: 0.5rem 0;
             padding: 0.5rem;
             border: 1px solid #ddd;
             border-radius: 4px;
+            transition: border 0.3s;
         }
-
+        
+        input:focus {
+            border: 1px solid #942509;
+            outline: none;
+        }
+        
         button {
             margin-top: 1rem;
             padding: 0.5rem;
@@ -91,33 +94,14 @@
             border-radius: 4px;
             height: 40px;
             cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
         }
-
+        
         button:hover {
             background-color: #571504;
+            transform: translateY(-2px);
         }
-
-        .forgot-password {
-            text-align: right;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .forgot-password a {
-            color: #706664;
-            text-decoration: none;
-        }
-
-        .newuser {
-            text-align: left;
-            margin-top: 1.5rem;
-        }
-
-        .newuser a {
-            color: #942509;
-            text-decoration: none;
-        }
-
+        
         .login-link {
             margin-top: 1rem;
             padding: 0.5rem;
@@ -129,53 +113,95 @@
             text-align: center;
             text-decoration: none;
             display: inline-block;
+            transition: background-color 0.3s, transform 0.2s;
         }
-
+        
         .login-link:hover {
             background-color: #571504;
+            transform: translateY(-2px);
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin: 0.5rem 0;
+        }
+        
+        .forgot-password a {
+            color: #942509;
+            text-decoration: none;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .newuser {
+            margin-top: 0.5rem;  /* Added margin-top */
+        }
+
+        .newuser a {
+            color: #942509;
+            text-decoration: none;
+        }
+
+        .newuser a:hover {
+            text-decoration: underline;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+        
+        nav ul li {
+            margin-left: 2rem;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: #6b6360;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: #942509;
+            background-color: #e9ecef;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 style="text-align: center; position: absolute; color: #FFFFFF; font-size: 65px; margin-left: 120px;"> Welcome Back!</h1>
-        <div class="image-side"></div>
-        <div class="login-side">
-            <div class="login-container">
+        <div class="image-side">
+            <h1>Welcome back!</h1>
+        </div>
+        <div class="signup-side">
+            <div class="signup-container">
                 <h1>Login</h1>
-                <ul>Welcome back! Please login to your account</ul>
-                <form method="post" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    
-                    <!-- Email Field -->
-                    <h3>Email</h3>
-                    <input type="email" name="email" value="{{ login_form.email.value }}" placeholder="Enter your email" required>
-                    {% if login_form.email.errors %}
-                        <p style="color: red;">{{ login_form.email.errors }}</p>
-                    {% endif %}
-                    
-                    <!-- Password Field -->
-                    <h3>Password</h3>
-                    <input type="password" name="password" value="{{ login_form.password.value }}" placeholder="Enter your password" required>
-                    {% if login_form.password.errors %}
-                        <p style="color: red;">{{ login_form.password.errors }}</p>
-                    {% endif %}
+                <form method="post">{% csrf_token %}
+                    {% for field in login_form %}
+                        <h3>{{ field.label }}</h3>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <p style="color: red;">{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
                     
                     <div class="forgot-password">
                         <a href="{% url 'password_reset' %}">Forgot Password?</a>
                     </div>
 
-                    <!-- Non-field Errors -->
                     {% if login_form.non_field_errors %}
-                        <div style="color:red;">
+                        <div style="color: red;">
                             <p>{{ login_form.non_field_errors }}</p>
                         </div>
                     {% endif %}
-                   
-                    <button type="submit">Log In</button>
+                    
+                    <button type="submit">Login</button>
                 </form>
-
-                <!-- Registration Link -->
                 <div class="newuser">
                     <p style="color: #706664;">New user? <a href="{% url 'register' %}">Sign up</a></p>
                 </div>
@@ -184,4 +210,5 @@
     </div>
 </body>
 </html>
+
 {% endblock content %}

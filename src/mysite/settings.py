@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'myDB',
+        'NAME': 'mangedetectDB',
         'USER': 'admin',
         'PASSWORD': '12345678',
         'HOST': 'myrds.cncm4460kdqi.ap-southeast-2.rds.amazonaws.com',

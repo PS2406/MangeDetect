@@ -4,6 +4,7 @@ from account.forms import RegistrationForm, AccountAuthenticationForm, AccountUp
 from image_recognition.models import UploadedImage
 from django.http import JsonResponse
 from account.models import Account
+from django.contrib import messages
 
 # Create your views here.
 
@@ -28,6 +29,7 @@ def registration_view(request):
 
 def logout_view(request):
     logout(request)
+    messages.success(request, 'Successfully logged out!')
     return redirect('home')
 
 def login_view(request):
@@ -46,6 +48,7 @@ def login_view(request):
 
             if user:
                 login(request, user)
+                messages.success(request, 'Successfully logged in!')
                 return redirect("home")
     else:
         form = AccountAuthenticationForm()
@@ -63,17 +66,17 @@ def account_view(request):
     if request.POST:
         form = AccountUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()
+            user = form.save(commit=False)
+            user.username = form.cleaned_data.get('username')
+            user.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('account')
     else:
-        form = AccountUpdateForm(
-            initial = {
-                "email": request.user.email,
-                "username": request.user.username,
-            }
-        )
+        form = AccountUpdateForm(instance=request.user)
+        
     context['account_form'] = form
 
-    uploaded_images = UploadedImage.objects.filter(author=request.user)
+    uploaded_images = UploadedImage.objects.filter(author=request.user).select_related('author')
     context['uploaded_images'] = uploaded_images 
 
     return render(request, 'account/account.html', context)
