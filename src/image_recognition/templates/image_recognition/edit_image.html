@@ -2,6 +2,231 @@
 
 {% block content %}
 
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
+    header {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .logo img {
+        height: 40px;
+    }
+    nav ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+    nav ul li {
+        margin-left: 2rem;
+    }
+    nav ul li a {
+        text-decoration: none;
+        color: #6b6360;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    nav ul li a:hover {
+        color: #942509;
+        background-color: #e9ecef;
+    }
+    .upload-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .upload-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .preview-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .create-form {
+        width: 100%;
+        padding: 15px;
+    }
+    .submit-button {
+        max-width: 200px;
+        background-color: #942509;
+        color: white;
+        padding: 15px 32px;
+        border-radius: 6px;
+        border: none;
+        transition: background-color 0.3s;
+        margin-top: 20px;
+    }
+    .submit-button:hover {
+        background-color: #6b6360;
+    }
+    .drop-zone {
+        background-color: rgba(145, 131, 138, 0.22);
+        color: #484a4d;
+        border: 2px dashed #ccc;
+        border-radius: 20px;
+        width: 100%;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        cursor: pointer;
+    }
+    .drop-zone.highlight {
+        border-color: #942509;
+    }
+    .preview-image {
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .preview-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 300px;
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        padding: 20px;
+    }
+    .back-button {
+        display: inline-block;
+        padding: 10px 20px;    
+        background-color: #942509; 
+        color: white;          
+        border-radius: 6px;    
+        text-decoration: none;   
+        transition: background-color 0.3s; 
+        font-size: 16px;  
+        margin-bottom: 20px;
+    }
+    .back-button:hover {
+        background-color: #6b6360; 
+    }
+
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+        padding: 20px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .preview-item {
+        position: relative;
+        width: 100%;
+        background: #f8f9fa;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .preview-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    .prediction-overlay {
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    .prediction-text {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+    .confidence-bar {
+        height: 4px;
+        background: #e9ecef;
+        margin-top: 8px;
+        border-radius: 2px;
+    }
+    .confidence-fill {
+        height: 100%;
+        background: #942509;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #942509;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .error-message {
+        color: #dc3545;
+        padding: 8px;
+        margin-top: 8px;
+        background: #f8d7da;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    .result-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-right: 8px;
+    }
+    .result-badge.normal {
+        background: #28a745;
+        color: white;
+    }
+    .result-badge.mange {
+        background: #dc3545;
+        color: white;
+    }
+
+	.form-group textarea {
+		resize: none; /* Prevents resizing */
+		max-width: 70%; /* Adjust as needed */
+		height: auto; /* Let height adjust automatically */
+	}
+	
+</style>
+
 <div class="container">
 	<div class="row">
 		<div class="col-lg-7 offset-lg-1">
@@ -13,28 +238,26 @@
 			<form class="create-form" method="post" enctype="multipart/form-data">{% csrf_token %}
 
 				<!-- title -->
-				<div class="form-group">
+				{% comment %} <div class="form-group">
 					<label for="id_title">Title</label>
 					<input class="form-control" type="text" name="title" id="id_title" placeholder="Title" value="{{form.initial.title}}" required autofocus>
-				</div>
-
-				<!-- Body -->
-				<div class="form-group">
-					<label for="id_result">Content</label>
-					<textarea class="form-control" rows="10" type="text" name="result" id="id_result" placeholder="This blog is about..." 
-					required>{{form.initial.result}}</textarea>
-				</div>
+				</div> {% endcomment %}
 
 				<!-- Image -->
 				<div class="form-group image-group" id="id_image_group">
-					<img class="img-fluid image" src="{{form.initial.image.url}}" id="id_image_display">
-					  <div class="middle">
-					    <div class="text">Change image</div>
-					  </div>
+					<img class="img-fluid image" src="{{form.initial.image.url}}" id="id_image_display">				  
 				</div>
-				<input type="file" name="image" id="id_image_file" accept="image/*" onchange="readURL(this)">
-				
+				{% comment %} <input type="file" name="image" id="id_image_file" accept="image/*" onchange="readURL(this)"> {% endcomment %}
 
+				<!-- Body -->
+				<div class="form-group">
+					
+					<textarea class="form-control" rows="4" type="text" name="result" id="id_result" placeholder="This blog is about..." 
+					required readonly>{{ form.initial.result }}</textarea>
+				</div>
+
+				<a href="{% url 'image_recognition:upload_history' %}" class="back-button">← Back to History Page</a>
+				
 				{% for field in form %}
 					<p>
 						{% for error in field.errors %}
@@ -49,13 +272,13 @@
 				{% endif %}
 
 				<!-- Submit btn -->
-				<button class="submit-button btn btn-lg btn-primary btn-block" type="submit">Update</button>
+				{% comment %} <button class="submit-button btn btn-lg btn-primary btn-block" type="submit">Update</button> {% endcomment %}
 			</form>	
 		</div>
 	</div>
 </div>
 
-<script type="text/javascript">
+{% comment %} <script type="text/javascript">
 	document.getElementById('id_image_group').onclick = function(event){
     	document.getElementById('id_image_file').click();
     };
@@ -68,6 +291,6 @@
         };
 		reader.readAsDataURL(input.files[0]);
 	}
-</script>
+</script> {% endcomment %}
 
 {% endblock content %}

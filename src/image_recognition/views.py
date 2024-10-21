@@ -20,6 +20,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple
 import io
+from django.core.paginator import Paginator
+from django.shortcuts import render
 
 def rate_limit(key_prefix, limit, period):
     def decorator(fn):
@@ -224,8 +226,44 @@ def edit_image_view(request, slug):
     return render(request, 'image_recognition/edit_image.html', context)
 
 def upload_history_view(request):
-    # Used selected_related to reduce database queries for faster loading of page.
-    uploaded_images = UploadedImage.objects.select_related('author').order_by('-date_updated')[:30] # Limits recent image posts to 30.
+    # Get sort parameter from URL
+    sort_param = request.GET.get('sort')
     
-    # Pass the images to the template
-    return render(request, 'image_recognition/upload_history.html', {'uploaded_image': uploaded_images})
+    # Start with base queryset using select_related to reduce database queries for faster loading of page.
+    queryset = UploadedImage.objects.select_related('author')
+    
+    # Apply sorting based on parameter
+    if sort_param:
+        if sort_param == 'default':
+            # Default sorting
+            queryset = queryset.order_by('-date_updated')
+        elif sort_param == 'image':
+            queryset = queryset.order_by('image')
+        elif sort_param == '-image':
+            queryset = queryset.order_by('-image')
+        elif sort_param == 'result':
+            queryset = queryset.order_by('result')
+        elif sort_param == '-result':
+            queryset = queryset.order_by('-result')
+        elif sort_param == 'author':
+            queryset = queryset.order_by('author__username')  # Assuming author has username field
+        elif sort_param == '-author':
+            queryset = queryset.order_by('-author__username')
+        elif sort_param == 'date_uploaded':
+            queryset = queryset.order_by('date_updated')
+        elif sort_param == '-date_uploaded':
+            queryset = queryset.order_by('-date_updated')
+    else:
+        # Default sorting if no sort parameter
+        queryset = queryset.order_by('-date_updated')
+    
+    # Limit to 30 results
+    uploaded_images = queryset[:30]
+    
+    context = {
+        'uploaded_image': uploaded_images,
+        'sort': sort_param,  # Pass current sort to template
+        'current_sort': sort_param if sort_param else 'default'  # For highlighting current sort option
+    }
+    
+    return render(request, 'image_recognition/upload_history.html', context)

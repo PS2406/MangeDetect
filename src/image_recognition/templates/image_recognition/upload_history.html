@@ -1,42 +1,66 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}History - MangeDetect{% endblock %}
+
 {% block content %}
 <style type="text/css">
-    .card {
-        max-width: 700px;
-        margin: 20px auto; /* Center the card */
-        border: 1px solid #ccc; /* Border for the card */
-        border-radius: 8px; /* Rounded corners */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow */
-        transition: box-shadow 0.3s; /* Smooth transition for hover effect */
-    }
-    
-    .card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Darker shadow on hover */
-    }
-    
-    .card-body {
+    .upload-table-container {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 20px;
-        background-color: #f8f9fa; /* Light background for card body */
     }
-    
-    .card-title {
-        color: #942509; /* Title color */
+
+    .upload-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        margin-top: 20px;
     }
-    
-    .card-footer {
-        background-color: #e9ecef; /* Light footer background */
-        border-top: 1px solid #ccc; /* Top border for footer */
+
+    .upload-table th {
+        padding: 12px;
+        text-align: left;
+        color: #942509;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
     }
-    
-    .btn-primary {
-        background-color: #942509; /* Match button color with theme */
-        border: none; /* Remove border */
+
+    .upload-table td {
+        padding: 12px;
+        background-color: white;
+        vertical-align: middle;
     }
-    
-    .btn-primary:hover {
-        background-color: #6b6360; /* Darker shade on hover */
+
+    .upload-table tr td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .upload-table tr td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .upload-table tbody tr td {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .upload-table tr td:first-child {
+        border-left: 1px solid #dee2e6;
+    }
+
+    .upload-table tr td:last-child {
+        border-right: 1px solid #dee2e6;
+    }
+
+    .upload-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
     }
 
     nav ul {
@@ -60,153 +84,225 @@
         background-color: #e9ecef;
     }
 
-    .back-button {
-        display: inline-block; /* Use inline-block to respect margins */
-        padding: 10px 20px;    
-        background-color: #942509; 
-        color: white;          
-        border-radius: 6px;    
-        text-decoration: none;   
-        transition: background-color 0.3s; 
-        font-size: 16px;  
-        margin-bottom: 20px; /* Space below the back button */
-    }
-    .back-button:hover {
-        background-color: #6b6360; 
+    .btn-primary {
+        background-color: #942509;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.3s;
     }
 
-    /* Scrollbar styles for WebKit browsers */
+    .btn-primary:hover {
+        background-color: #6b6360;
+    }
+
+    .result-text {
+        color: #333;
+        max-width: 400px;
+    }
+
+    /* Maintain scrollbar styles */
     ::-webkit-scrollbar {
-        width: 8px; /* Width of the scrollbar */
-        height: 8px; /* Height of the scrollbar for horizontal scrolling */
+        width: 8px;
+        height: 8px;
     }
 
     ::-webkit-scrollbar-thumb {
-        background-color: #942509; /* Color of the scrollbar thumb */
-        border-radius: 10px; /* Rounded corners */
-    }
-
-    /* Hides the scrollbar buttons */
-    ::-webkit-scrollbar-button {
-        width: 0;
-        height: 0;
-        display: none;
-        background: none;
-        padding: 0;
-        border: none;
+        background-color: #942509;
+        border-radius: 10px;
     }
 
     ::-webkit-scrollbar-track {
-        background-color: #f1f1f1; /* Color of the scrollbar track */
-        border-radius: 10px; /* Rounded corners */
+        background-color: #f1f1f1;
+        border-radius: 10px;
     }
 
-    /* Scrollbar styles for Firefox */
     * {
-        scrollbar-width: thin; /* Use 'thin' for a thin scrollbar */
-        scrollbar-color: #942509 #f1f1f1; /* thumb color and track color */
+        scrollbar-width: thin;
+        scrollbar-color: #942509 #f1f1f1;
     }
 
-    .upload-list {
-        max-width: 900px;
-        margin: 0 auto;
+    .sort-dropdown {
+        position: relative;
+        display: inline-block;
     }
-    .upload-row {
-        border: 1px solid #dee2e6;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        overflow: hidden;
-        background: white;
+
+    .sort-button {
+        background: none;
+        border: none;
+        cursor: pointer;
     }
-    .upload-image {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
+
+    .sort-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        z-index: 1;
+        min-width: 160px;
     }
-    .upload-details {
-        display: flex;
-        align-items: center;
-        padding: 10px 20px;
+
+    .sort-dropdown.active .sort-dropdown-content {
+        display: block;
     }
-    .upload-info {
-        flex-grow: 1;
-        margin-left: 20px;
+
+    .sort-dropdown-content a {
+        color: black;
+        padding: 8px 12px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.3s;
     }
-    .upload-actions {
-        min-width: 100px;
-        text-align: right;
+
+    .sort-dropdown-content a:hover {
+        background-color: #f1f1f1;
     }
-    .upload-metadata {
-        color: #6c757d;
-        font-size: 0.9rem;
-    }
-    .result-text {
-        margin: 5px 0;
-        color: #333;
+
+    .current-sort {
+        font-weight: bold;
+        color: #942509;
     }
 </style>
 
 <h1 class="text-center">Upload History</h1>
 
-<div class="container">
-    <div class="upload-list">
-        {% if uploaded_image %}
-            {% if uploaded_image|length is not None %}
-                {# Handle queryset of multiple images #}
-                {% for post in uploaded_image %}
-                    <div class="upload-row">
-                        <div class="upload-details">
-                            <div class="upload-image-container">
-                                <a href="{% url 'upload:detail' post.slug %}">
-                                    <img class="upload-image" src="{{ post.image.url }}" alt="Uploaded image" loading="lazy">
-                                </a>
-                            </div>
-                            
-                            <div class="upload-info">
-                                <div class="result-text">{{ post.result|truncatechars:180 }}</div>
-                                <div class="upload-metadata">
-                                    Uploaded on {{ post.date_uploaded }} by {{ post.author }}
-                                </div>
-                            </div>
-                            
-                            <div class="upload-actions">
-                                {% if post.author == request.user %}
-                                    <a href="{% url 'image_recognition:edit' post.slug %}" class="btn btn-primary btn-sm">Update</a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                {# Handle single image object #}
-                <div class="upload-row">
-                    <div class="upload-details">
-                        <div class="upload-image-container">
-                            <a href="{% url 'upload:detail' uploaded_image.slug %}">
-                                <img class="upload-image" src="{{ uploaded_image.image.url }}" alt="Uploaded image">
+<div class="upload-table-container">
+    {% if uploaded_image %}
+    <table class="upload-table">
+        <thead>
+            <tr>
+                <th>
+                    Image
+                </th>
+                <th>
+                    Result
+                    <div class="sort-dropdown">
+                        <button class="sort-button" onclick="toggleSort(event, this)">
+                            <i class="fas fa-sort"></i>
+                        </button>
+                        <div class="sort-dropdown-content">
+                            <a href="?sort=result" {% if sort == 'result' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-sort-up sort-icon"></i> Sort Ascending
+                            </a>
+                            <a href="?sort=-result" {% if sort == '-result' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-sort-down sort-icon"></i> Sort Descending
+                            </a>
+                            <a href="?sort=default" {% if not sort or sort == 'default' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-times sort-icon"></i> Default Order
                             </a>
                         </div>
-                        
-                        <div class="upload-info">
-                            <div class="result-text">{{ uploaded_image.result|truncatechars:180 }}</div>
-                            <div class="upload-metadata">
-                                Uploaded on {{ uploaded_image.date_uploaded }} by {{ uploaded_image.author }}
-                            </div>
-                        </div>
-                        
-                        <div class="upload-actions">
-                            {% if uploaded_image.author == request.user %}
-                                <a href="{% url 'image_recognition:edit' uploaded_image.slug %}" class="btn btn-primary btn-sm">Update</a>
-                            {% endif %}
+                    </div>
+                </th>
+                <th>
+                    Author
+                    <div class="sort-dropdown">
+                        <button class="sort-button" onclick="toggleSort(event, this)">
+                            <i class="fas fa-sort"></i>
+                        </button>
+                        <div class="sort-dropdown-content">
+                            <a href="?sort=author" {% if sort == 'author' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-sort-up sort-icon"></i> Sort Ascending
+                            </a>
+                            <a href="?sort=-author" {% if sort == '-author' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-sort-down sort-icon"></i> Sort Descending
+                            </a>
+                            <a href="?sort=default" {% if not sort or sort == 'default' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-times sort-icon"></i> Default Order
+                            </a>
                         </div>
                     </div>
-                </div>
-            {% endif %}
-        {% else %}
-            <div class="alert alert-info text-center">
-                No images uploaded yet.
-            </div>
-        {% endif %}
-    </div>
+                </th>
+                <th>
+                    Date
+                    <div class="sort-dropdown">
+                        <button class="sort-button" onclick="toggleSort(event, this)">
+                            <i class="fas fa-sort"></i>
+                        </button>
+                        <div class="sort-dropdown-content">
+                            <a href="?sort=date_uploaded" {% if sort == 'date_uploaded' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-sort-up sort-icon"></i> Sort Ascending
+                            </a>
+                            <a href="?sort=-date_uploaded" {% if sort == '-date_uploaded' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-sort-down sort-icon"></i> Sort Descending
+                            </a>
+                            <a href="?sort=default" {% if not sort or sort == 'default' %}class="current-sort"{% endif %}>
+                                <i class="fas fa-times sort-icon"></i> Default Order
+                            </a>
+                        </div>
+                    </div>
+                </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in uploaded_image %}
+                <tr>
+                    <td>
+                        <a href="{% url 'upload:detail' post.slug %}">
+                            <img class="upload-image" src="{{ post.image.url }}" alt="Uploaded image" loading="lazy">
+                        </a>
+                    </td>
+                    <td>
+                        <div class="result-text">{{ post.result|truncatechars:100 }}</div>
+                    </td>
+                    <td>{{ post.author }}</td>
+                    <td>{{ post.date_uploaded }}</td>
+                    <td>
+                        {% comment %} {% if post.author == request.user %} {% endcomment %}
+                            <a href="{% url 'image_recognition:edit' post.slug %}" class="btn btn-primary btn-sm">View</a>
+                        {% comment %} {% endif %} {% endcomment %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="alert alert-info text-center">
+            No images uploaded yet.
+        </div>
+    {% endif %}
 </div>
+
+<script>
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.sort-dropdown')) {
+            document.querySelectorAll('.sort-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    });
+
+    function toggleSort(event, button) {
+        event.stopPropagation();
+        const dropdown = button.parentElement;
+        document.querySelectorAll('.sort-dropdown').forEach(other => {
+            if (other !== dropdown) {
+                other.classList.remove('active');
+            }
+        });
+        dropdown.classList.toggle('active');
+    }
+
+    document.querySelectorAll('.sort-dropdown-content a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentUrl = new URL(window.location.href);
+            const sort = this.getAttribute('href').split('=')[1];
+            if (sort === 'default') {
+                currentUrl.searchParams.delete('sort');
+            } else {
+                currentUrl.searchParams.set('sort', sort);
+            }
+            window.location.href = currentUrl.toString();
+        });
+    });
+
+    // Font Awesome inclusion for icons
+    const fontAwesome = document.createElement('link');
+    fontAwesome.rel = 'stylesheet';
+    fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+    document.head.appendChild(fontAwesome);
+</script>
 {% endblock content %}
