@@ -1,33 +1,31 @@
 {% extends 'base.html' %}
 {% load user_tags %}
+{% load static %}
+
+{% block title %}My Account - MangeDetect{% endblock %}
 
 {% block content %}
 
 <style>
     body, html {
-        overflow: hidden;
         margin: 0;
         padding: 0;
         height: 100%;
         font-family: Arial, sans-serif;
     }
-    .banner {
-        height: 100px; /* Adjust height as needed */
-        background-image: url('/static/leftsidebg.jpg'); /* Adjust path as necessary */
-        background-size: cover;
-        background-position: center;
-    }
+
     .account-side {
         display: flex;
-        justify-content: center;
-        align-items: flex-start; /* Align items at the top */
+        justify-content: flex-start;  /* Changed to flex-start */
+        align-items: flex-start;
         background-color: #f0f0f0;
-        height: calc(100% - 100px); /* Adjusts height based on banner */
-        padding: 1rem; /* Add padding to the sides */
+        
+        padding: 1rem;
+        overflow-y: auto;  /* Added scroll for content overflow */
     }
     .account-container {
         background-color: white;
-        padding: 2rem; /* Adjusted padding */
+        padding: 2rem;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         width: 100%;
@@ -124,10 +122,10 @@
 
     .nav-tabs .nav-item.show .nav-link, 
     .nav-tabs .nav-link.active {
-    color: #942509; /* Text color for the active tab */
-    background-color: #fff; /* Background color for the active tab */
-    border-color: #ddd #ddd #fff; /* Border color, removing the bottom border */
-    border-bottom: 2px solid #942509; /* The underline under the active tab */
+        color: #942509; /* Text color for the active tab */
+        background-color: #fff; /* Background color for the active tab */
+        border-color: #ddd #ddd #fff; /* Border color, removing the bottom border */
+        border-bottom: 2px solid #942509; /* The underline under the active tab */
     }
 
     .stat-text {
@@ -137,7 +135,146 @@
         margin: 10px 0; /* Optional: add some margin for spacing */
     }
     
+    .upload-table-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        overflow: visible;
+    }
 
+    .upload-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        margin-top: 20px;
+    }
+
+    .upload-table th {
+        padding: 12px;
+        text-align: left;
+        color: #942509;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    .upload-table td {
+        padding: 12px;
+        background-color: white;
+        vertical-align: middle;
+    }
+
+    .upload-table tr td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .upload-table tr td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .upload-table tbody tr td {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .upload-table tr td:first-child {
+        border-left: 1px solid #dee2e6;
+    }
+
+    .upload-table tr td:last-child {
+        border-right: 1px solid #dee2e6;
+    }
+
+    .upload-table td .btn-primary {
+        background-color: #942509; 
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    
+    .upload-table td .btn-primary:hover {
+        background-color: #e65100; 
+    }
+
+    .upload-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .result-text {
+        color: #333;
+        max-width: 400px;
+    }
+
+    .sort-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .sort-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .sort-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        z-index: 1;
+        min-width: 160px;
+    }
+
+    .sort-dropdown.active .sort-dropdown-content {
+        display: block;
+    }
+
+    .sort-dropdown-content a {
+        color: black;
+        padding: 8px 12px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.3s;
+    }
+
+    .sort-dropdown-content a:hover {
+        background-color: #f1f1f1;
+    }
+
+    .current-sort {
+        font-weight: bold;
+        color: #942509;
+    }
+
+    /* Scrollbar styles */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #942509;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #942509 #f1f1f1;
+    }
 </style>
 
 
@@ -184,20 +321,79 @@
                 </div>
             </div>
             
-            <!-- View History Tab -->
             <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
-                <div class="uploaded-images">
-                    <h3 class="mb-3 font-weight-normal">Image posts:</h3>
+                <div class="upload-table-container">
                     {% if uploaded_images %}
-                        <ul class="list-group">
-                        {% for post in uploaded_images %}
-                            <a href="{% url 'image_recognition:detail' post.slug %}" style="text-decoration: none;">
-                                <li class="list-group-item">{{ post }}</li>
-                            </a>
-                        {% endfor %}
-                        </ul>
+                        <table class="upload-table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Image
+                                    </th>
+                                    <th>
+                                        Result
+                                        <div class="sort-dropdown">
+                                            <button class="sort-button" onclick="toggleSort(event, this)">
+                                                <i class="fas fa-sort"></i>
+                                            </button>
+                                            <div class="sort-dropdown-content">
+                                                <a href="?sort=result" {% if sort == 'result' %}class="current-sort"{% endif %}>
+                                                    <i class="fas fa-sort-up"></i> Sort Ascending
+                                                </a>
+                                                <a href="?sort=-result" {% if sort == '-result' %}class="current-sort"{% endif %}>
+                                                    <i class="fas fa-sort-down"></i> Sort Descending
+                                                </a>
+                                                <a href="?sort=default" {% if not sort %}class="current-sort"{% endif %}>
+                                                    <i class="fas fa-times"></i> Default Order
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        Date
+                                        <div class="sort-dropdown">
+                                            <button class="sort-button" onclick="toggleSort(event, this)">
+                                                <i class="fas fa-sort"></i>
+                                            </button>
+                                            <div class="sort-dropdown-content">
+                                                <a href="?sort=date_uploaded" {% if sort == 'date_uploaded' %}class="current-sort"{% endif %}>
+                                                    <i class="fas fa-sort-up"></i> Sort Ascending
+                                                </a>
+                                                <a href="?sort=-date_uploaded" {% if sort == '-date_uploaded' %}class="current-sort"{% endif %}>
+                                                    <i class="fas fa-sort-down"></i> Sort Descending
+                                                </a>
+                                                <a href="?sort=default" {% if not sort %}class="current-sort"{% endif %}>
+                                                    <i class="fas fa-times"></i> Default Order
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in uploaded_images %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'image_recognition:detail' post.slug %}">
+                                                <img class="upload-image" src="{{ post.image.url }}" alt="Uploaded image" loading="lazy">
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="result-text">{{ post.result|truncatechars:100 }}</div>
+                                        </td>
+                                        <td>{{ post.date_uploaded }}</td>
+                                        <td>
+                                            <a href="{% url 'image_recognition:edit' post.slug %}" class="btn btn-primary btn-sm">View</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     {% else %}
-                        <p>You have no images uploaded. Create a post <a href="{% url 'image_recognition:upload' %}">here</a>.</p>
+                        <div class="alert alert-info text-center">
+                            You have no images uploaded. Create a post <a href="{% url 'image_recognition:upload' %}">here</a>.
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -230,6 +426,46 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+<script>
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.sort-dropdown')) {
+            document.querySelectorAll('.sort-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    });
+
+    function toggleSort(event, button) {
+        event.stopPropagation();
+        const dropdown = button.parentElement;
+        document.querySelectorAll('.sort-dropdown').forEach(other => {
+            if (other !== dropdown) {
+                other.classList.remove('active');
+            }
+        });
+        dropdown.classList.toggle('active');
+    }
+
+    document.querySelectorAll('.sort-dropdown-content a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentUrl = new URL(window.location.href);
+            const sort = this.getAttribute('href').split('=')[1];
+            if (sort === 'default') {
+                currentUrl.searchParams.delete('sort');
+            } else {
+                currentUrl.searchParams.set('sort', sort);
+            }
+            window.location.href = currentUrl.toString();
+        });
+    });
+
+        // Font Awesome inclusion for icons
+        const fontAwesome = document.createElement('link');
+        fontAwesome.rel = 'stylesheet';
+        fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+        document.head.appendChild(fontAwesome);
+</script>
 
 
 {% endblock content %}

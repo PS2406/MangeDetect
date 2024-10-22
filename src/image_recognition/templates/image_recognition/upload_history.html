@@ -5,10 +5,18 @@
 
 {% block content %}
 <style type="text/css">
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: Arial, sans-serif;
+    }
+
     .upload-table-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
+        
     }
 
     .upload-table {
@@ -164,6 +172,124 @@
         font-weight: bold;
         color: #942509;
     }
+
+    .filter-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .filter-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .filter-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        z-index: 1;
+        min-width: 160px;
+    }
+
+    .filter-dropdown.active .filter-dropdown-content {
+        display: block;
+    }
+
+    .filter-dropdown-content a {
+        color: black;
+        padding: 8px 12px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.3s;
+    }
+
+    .filter-dropdown-content a:hover {
+        background-color: #f1f1f1;
+    }
+
+    .current-filter {
+        font-weight: bold;
+        color: #942509;
+    }
+
+    .date-range-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .date-range-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        z-index: 1;
+        padding: 15px;
+        min-width: 250px;
+        border-radius: 4px;
+    }
+
+    .date-range-dropdown.active .date-range-content {
+        display: block;
+    }
+
+    .date-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .date-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .date-input-group label {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .date-input-group input[type="date"] {
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .date-range-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .date-range-buttons button {
+        flex: 1;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .date-range-buttons button.apply {
+        background-color: #942509;
+        color: white;
+        border-color: #942509;
+    }
+
+    .date-range-buttons button:hover {
+        background-color: #6b6360;
+        border-color: #6b6360;
+        color: white;
+    }
+
+    .active-date-range {
+        font-size: 0.8em;
+        color: #942509;
+        margin-top: 5px;
+    }
 </style>
 
 <h1 class="text-center">Upload History</h1>
@@ -178,19 +304,19 @@
                 </th>
                 <th>
                     Result
-                    <div class="sort-dropdown">
-                        <button class="sort-button" onclick="toggleSort(event, this)">
-                            <i class="fas fa-sort"></i>
+                    <div class="filter-dropdown">
+                        <button class="filter-button" onclick="toggleFilter(event, this)">
+                            <i class="fas fa-filter"></i>
                         </button>
-                        <div class="sort-dropdown-content">
-                            <a href="?sort=result" {% if sort == 'result' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-sort-up sort-icon"></i> Sort Ascending
+                        <div class="filter-dropdown-content">
+                            <a href="?filter=all" {% if not filter or filter == 'all' %}class="current-filter"{% endif %}>
+                                <i class="fas fa-list"></i> Show All
                             </a>
-                            <a href="?sort=-result" {% if sort == '-result' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-sort-down sort-icon"></i> Sort Descending
+                            <a href="?filter=mange" {% if filter == 'mange' %}class="current-filter"{% endif %}>
+                                <i class="fas fa-exclamation-circle"></i> Mange Only
                             </a>
-                            <a href="?sort=default" {% if not sort or sort == 'default' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-times sort-icon"></i> Default Order
+                            <a href="?filter=normal" {% if filter == 'normal' %}class="current-filter"{% endif %}>
+                                <i class="fas fa-check-circle"></i> Normal Only
                             </a>
                         </div>
                     </div>
@@ -232,6 +358,37 @@
                             </a>
                         </div>
                     </div>
+
+                    <div class="date-range-dropdown">
+                        <button class="filter-button" onclick="toggleDateRange(event, this)">
+                            <i class="fas fa-calendar-alt"></i>
+                        </button>
+                        <div class="date-range-content">
+                            <div class="date-inputs">
+                                <div class="date-input-group">
+                                    <label for="start_date">Start Date</label>
+                                    <input type="date" id="start_date" name="start_date" 
+                                           value="{{ start_date|date:'Y-m-d' }}"
+                                           max="{{ today|date:'Y-m-d' }}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label for="end_date">End Date</label>
+                                    <input type="date" id="end_date" name="end_date" 
+                                           value="{{ end_date|date:'Y-m-d' }}"
+                                           max="{{ today|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+                            <div class="date-range-buttons">
+                                <button onclick="clearDateRange()">Clear</button>
+                                <button class="apply" onclick="applyDateRange()">Apply</button>
+                            </div>
+                            {% if start_date and end_date %}
+                            <div class="active-date-range">
+                                Filtered: {{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>                    
                 </th>
                 <th>Actions</th>
             </tr>
@@ -267,8 +424,10 @@
 
 <script>
     document.addEventListener('click', function(event) {
-        if (!event.target.closest('.sort-dropdown')) {
-            document.querySelectorAll('.sort-dropdown').forEach(dropdown => {
+        if (!event.target.closest('.sort-dropdown') && 
+            !event.target.closest('.filter-dropdown') && 
+            !event.target.closest('.date-range-dropdown')) {
+            document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(dropdown => {
                 dropdown.classList.remove('active');
             });
         }
@@ -276,8 +435,8 @@
 
     function toggleSort(event, button) {
         event.stopPropagation();
-        const dropdown = button.parentElement;
-        document.querySelectorAll('.sort-dropdown').forEach(other => {
+        const dropdown = button.closest('.sort-dropdown');
+        document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(other => {
             if (other !== dropdown) {
                 other.classList.remove('active');
             }
@@ -285,17 +444,83 @@
         dropdown.classList.toggle('active');
     }
 
-    document.querySelectorAll('.sort-dropdown-content a').forEach(link => {
+    function toggleFilter(event, button) {
+        event.stopPropagation();
+        const dropdown = button.closest('.filter-dropdown');
+        document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(other => {
+            if (other !== dropdown) {
+                other.classList.remove('active');
+            }
+        });
+        dropdown.classList.toggle('active');
+    }
+
+    function toggleDateRange(event, button) {
+        event.stopPropagation();
+        const dropdown = button.closest('.date-range-dropdown');
+        document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(other => {
+            if (other !== dropdown) {
+                other.classList.remove('active');
+            }
+        });
+        dropdown.classList.toggle('active');
+    }
+
+    // Helper function to maintain existing URL parameters
+    function updateUrlWithParams(newParams) {
+        const currentUrl = new URL(window.location.href);
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value === null) {
+                currentUrl.searchParams.delete(key);
+            } else {
+                currentUrl.searchParams.set(key, value);
+            }
+        });
+        return currentUrl.toString();
+    }
+
+    function applyDateRange() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        
+        if (!startDate || !endDate) {
+            alert('Please select both start and end dates');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            alert('Start date must be before end date');
+            return;
+        }
+
+        window.location.href = updateUrlWithParams({
+            'start_date': startDate,
+            'end_date': endDate
+        });
+    }
+
+    function clearDateRange() {
+        window.location.href = updateUrlWithParams({
+            'start_date': null,
+            'end_date': null
+        });
+    }
+
+    // Update links to maintain all parameters
+    document.querySelectorAll('.sort-dropdown-content a, .filter-dropdown-content a').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const currentUrl = new URL(window.location.href);
-            const sort = this.getAttribute('href').split('=')[1];
-            if (sort === 'default') {
-                currentUrl.searchParams.delete('sort');
+            const param = this.getAttribute('href').split('=')[0].substring(1);
+            const value = this.getAttribute('href').split('=')[1];
+            
+            const params = {};
+            if (value !== 'all' || param !== 'filter') {
+                params[param] = value;
             } else {
-                currentUrl.searchParams.set('sort', sort);
+                params['filter'] = null;
             }
-            window.location.href = currentUrl.toString();
+            
+            window.location.href = updateUrlWithParams(params);
         });
     });
 

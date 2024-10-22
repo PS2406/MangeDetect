@@ -22,6 +22,8 @@ from typing import List, Tuple
 import io
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 def rate_limit(key_prefix, limit, period):
     def decorator(fn):
@@ -228,19 +230,37 @@ def edit_image_view(request, slug):
 def upload_history_view(request):
     # Get sort parameter from URL
     sort_param = request.GET.get('sort')
+    filter_param = request.GET.get('filter')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
     
     # Start with base queryset using select_related to reduce database queries for faster loading of page.
     queryset = UploadedImage.objects.select_related('author')
     
+    # Apply date range filtering if provided
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            # Add one day to end_date to include the entire end date
+            end_date = end_date + timedelta(days=1)
+            queryset = queryset.filter(date_updated__range=(start_date, end_date))
+        except ValueError:
+            # Handle invalid date format
+            pass
+
+    # Apply filtering based on result parameter
+    if filter_param:
+        if filter_param == 'mange':
+            queryset = queryset.filter(result__icontains='mange')
+        elif filter_param == 'normal':
+            queryset = queryset.filter(result__icontains='normal')
+
     # Apply sorting based on parameter
     if sort_param:
         if sort_param == 'default':
             # Default sorting
             queryset = queryset.order_by('-date_updated')
-        elif sort_param == 'image':
-            queryset = queryset.order_by('image')
-        elif sort_param == '-image':
-            queryset = queryset.order_by('-image')
         elif sort_param == 'result':
             queryset = queryset.order_by('result')
         elif sort_param == '-result':
@@ -263,7 +283,12 @@ def upload_history_view(request):
     context = {
         'uploaded_image': uploaded_images,
         'sort': sort_param,  # Pass current sort to template
-        'current_sort': sort_param if sort_param else 'default'  # For highlighting current sort option
+        'filter': filter_param,  # Pass current filter to template
+        'current_sort': sort_param if sort_param else 'default',  # For highlighting current sort option
+        'current_filter': filter_param if filter_param else 'all',  # For highlighting current filter option
+        'start_date': start_date if start_date else None,
+        'end_date': end_date if end_date else None,
+        'today': timezone.now().date(),  # For max date in date inputs
     }
     
     return render(request, 'image_recognition/upload_history.html', context)

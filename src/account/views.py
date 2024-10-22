@@ -57,12 +57,12 @@ def login_view(request):
     return render(request, 'account/login.html', context)
 
 def account_view(request):
-
     if not request.user.is_authenticated:
         return redirect("login")
     
     context = {}
 
+    # Handle POST request for account updates
     if request.POST:
         form = AccountUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -76,8 +76,35 @@ def account_view(request):
         
     context['account_form'] = form
 
+    # Get sort parameter from URL
+    sort_param = request.GET.get('sort', '')
+    
+    # Base queryset
     uploaded_images = UploadedImage.objects.filter(author=request.user).select_related('author')
-    context['uploaded_images'] = uploaded_images 
+    
+    # Apply sorting based on parameter
+    if sort_param:
+        if sort_param == 'default':
+            # Default sorting (you can specify your default order)
+            uploaded_images = uploaded_images.order_by('-date_uploaded')
+        else:
+            # Map sort parameters to model fields
+            sort_mapping = {
+                'result': 'result',
+                '-result': '-result',
+                'date_uploaded': 'date_uploaded',
+                '-date_uploaded': '-date_uploaded',
+            }
+            
+            if sort_param in sort_mapping:
+                uploaded_images = uploaded_images.order_by(sort_mapping[sort_param])
+    else:
+        # Default sorting if no parameter is provided
+        uploaded_images = uploaded_images.order_by('-date_uploaded')
+    
+    # Add sort parameter to context for template
+    context['sort'] = sort_param
+    context['uploaded_images'] = uploaded_images
 
     return render(request, 'account/account.html', context)
 
