@@ -162,15 +162,23 @@
         text-decoration: none;
         display: block;
         transition: background-color 0.3s;
+        font-weight: normal;
     }
 
     .sort-dropdown-content a:hover {
         background-color: #f1f1f1;
     }
 
+    .sort-button:hover, .filter-button:hover {
+        background-color: #e9ecef;
+        border-color: #942509;
+        color: #942509;
+    }
+
     .current-sort {
         font-weight: bold;
         color: #942509;
+        background-color: #e7f3ff;
     }
 
     .filter-dropdown {
@@ -191,6 +199,7 @@
         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         z-index: 1;
         min-width: 160px;
+        
     }
 
     .filter-dropdown.active .filter-dropdown-content {
@@ -203,6 +212,7 @@
         text-decoration: none;
         display: block;
         transition: background-color 0.3s;
+        font-weight: normal;
     }
 
     .filter-dropdown-content a:hover {
@@ -212,6 +222,7 @@
     .current-filter {
         font-weight: bold;
         color: #942509;
+        background-color: #e7f3ff;
     }
 
     .date-range-dropdown {
@@ -290,6 +301,24 @@
         color: #942509;
         margin-top: 5px;
     }
+
+    .pagination-container a {
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        background-color: #942509;
+        color: white;
+        transition: background-color 0.3s;
+    }
+
+    .pagination-container a:hover {
+        background-color: #6b6360;
+    }
+
+    .current-page {
+        color: #333;
+        border: 1px solid #dee2e6;
+    }
 </style>
 
 <h1 class="text-center">Upload History</h1>
@@ -329,10 +358,10 @@
                         </button>
                         <div class="sort-dropdown-content">
                             <a href="?sort=author" {% if sort == 'author' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-sort-up sort-icon"></i> Sort Ascending
+                                <i class="fas fa-sort-up sort-icon"></i> Sort A-Z
                             </a>
                             <a href="?sort=-author" {% if sort == '-author' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-sort-down sort-icon"></i> Sort Descending
+                                <i class="fas fa-sort-down sort-icon"></i> Sort Z-A
                             </a>
                             <a href="?sort=default" {% if not sort or sort == 'default' %}class="current-sort"{% endif %}>
                                 <i class="fas fa-times sort-icon"></i> Default Order
@@ -348,10 +377,10 @@
                         </button>
                         <div class="sort-dropdown-content">
                             <a href="?sort=date_uploaded" {% if sort == 'date_uploaded' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-sort-up sort-icon"></i> Sort Ascending
+                                <i class="fas fa-sort-up sort-icon"></i> Sort Oldest
                             </a>
                             <a href="?sort=-date_uploaded" {% if sort == '-date_uploaded' %}class="current-sort"{% endif %}>
-                                <i class="fas fa-sort-down sort-icon"></i> Sort Descending
+                                <i class="fas fa-sort-down sort-icon"></i> Sort Newest
                             </a>
                             <a href="?sort=default" {% if not sort or sort == 'default' %}class="current-sort"{% endif %}>
                                 <i class="fas fa-times sort-icon"></i> Default Order
@@ -415,6 +444,30 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Pagination Code-->
+    {% if uploaded_image.paginator.num_pages > 1 %}
+    <div class="pagination-container" style="display: flex; justify-content: center; margin-top: 20px; gap: 10px;">
+        {% if uploaded_image.has_previous %}
+            <a href="{{ request.path }}?page=1{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+               class="btn btn-primary btn-sm">&laquo; First</a>
+            <a href="{{ request.path }}?page={{ uploaded_image.previous_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+               class="btn btn-primary btn-sm">Previous</a>
+        {% endif %}
+
+        <span class="current-page" style="padding: 5px 10px; background-color: #f8f9fa; border-radius: 4px;">
+            Page {{ uploaded_image.number }} of {{ uploaded_image.paginator.num_pages }}
+        </span>
+
+        {% if uploaded_image.has_next %}
+            <a href="{{ request.path }}?page={{ uploaded_image.next_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+               class="btn btn-primary btn-sm">Next</a>
+            <a href="{{ request.path }}?page={{ uploaded_image.paginator.num_pages }}{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+               class="btn btn-primary btn-sm">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% else %}
         <div class="alert alert-info text-center">
             No images uploaded yet.
@@ -506,7 +559,7 @@
         });
     }
 
-    // Update links to maintain all parameters
+    // 
     document.querySelectorAll('.sort-dropdown-content a, .filter-dropdown-content a').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();

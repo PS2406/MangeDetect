@@ -20,7 +20,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple
 import io
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -78,8 +78,6 @@ def load_model():
     
     model.eval()  # Set the model to evaluation mode
     return model
-
-
 
 # Global variable to store the model
 image_model = load_model()
@@ -233,6 +231,7 @@ def upload_history_view(request):
     filter_param = request.GET.get('filter')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    page = request.GET.get('page', 1)  # Get the page number from request
     
     # Start with base queryset using select_related to reduce database queries for faster loading of page.
     queryset = UploadedImage.objects.select_related('author')
@@ -276,9 +275,18 @@ def upload_history_view(request):
     else:
         # Default sorting if no sort parameter
         queryset = queryset.order_by('-date_updated')
-    
-    # Limit to 30 results
-    uploaded_images = queryset[:30]
+
+    # Create paginator instance
+    paginator = Paginator(queryset, 10)
+
+    try:
+        uploaded_images = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        uploaded_images = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        uploaded_images = paginator.page(paginator.num_pages)
     
     context = {
         'uploaded_image': uploaded_images,

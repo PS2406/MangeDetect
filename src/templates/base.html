@@ -225,20 +225,4 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<script>
 
-// Add this script to your base template or create a new JS file
-    function updateUserCount() {
-        fetch('/api/user_count/')  // You'll need to create this API endpoint
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('user-count').textContent = data.count;
-        });
-    }
-    
-    // Update every 10 minutes (adjust as needed) (1 second = 1000 ticks)
-    setInterval(updateUserCount, 600000);
-    
-    // Initial update
-    updateUserCount();
-</script>

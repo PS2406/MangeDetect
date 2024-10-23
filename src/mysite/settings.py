@@ -24,13 +24,22 @@ SECRET_KEY = 'django-insecure-8b@=w9ohwyev1o8j1h((j4gg_w7ov7@hlez$1bqn2hwhhow(0q
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# Allows static files to be served directly in production.
+ALLOW_STATIC_IN_PRODUCTION = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # If in development environment do the following:
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # During development only
+# if DEBUG:
+#     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # During development only
 # else:
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mangedetect@gmail.com'  # Gmail address
+EMAIL_HOST_PASSWORD = 'adxmgptjpofmfbvj' # Gmail password or app password
 
 
 # Application definition
@@ -50,10 +59,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-
-# # Media stuff added.
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'account.Account'
 

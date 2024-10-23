@@ -139,57 +139,63 @@
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
-        overflow: visible;
     }
-
+    
     .upload-table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0 8px;
         margin-top: 20px;
     }
-
+    
     .upload-table th {
         padding: 12px;
         text-align: left;
         color: #942509;
         font-weight: 600;
         border-bottom: 2px solid #dee2e6;
-        vertical-align: middle;
-    }
 
+    }
+    
     .upload-table td {
         padding: 12px;
         background-color: white;
         vertical-align: middle;
     }
-
+    
     .upload-table tr td:first-child {
         border-top-left-radius: 8px;
         border-bottom-left-radius: 8px;
     }
-
+    
     .upload-table tr td:last-child {
         border-top-right-radius: 8px;
         border-bottom-right-radius: 8px;
     }
-
+    
     .upload-table tbody tr td {
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         border-top: 1px solid #dee2e6;
         border-bottom: 1px solid #dee2e6;
     }
-
+    
     .upload-table tr td:first-child {
         border-left: 1px solid #dee2e6;
     }
-
+    
     .upload-table tr td:last-child {
         border-right: 1px solid #dee2e6;
     }
-
-    .upload-table td .btn-primary {
-        background-color: #942509; 
+    
+    .upload-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .btn-primary {
+        background-color: #942509;
         border: none;
         padding: 6px 12px;
         border-radius: 4px;
@@ -198,79 +204,180 @@
         transition: background-color 0.3s;
     }
     
-    .upload-table td .btn-primary:hover {
-        background-color: #e65100; 
+    .btn-primary:hover {
+        background-color: #6b6360;
     }
-
-    .upload-image {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 4px;
-    }
-
+    
     .result-text {
         color: #333;
         max-width: 400px;
     }
-
-    .sort-dropdown {
+    
+    /* Dropdown styles */
+    .sort-dropdown, .filter-dropdown, .date-range-dropdown {
         position: relative;
         display: inline-block;
     }
-
-    .sort-button {
-        background: none;
-        border: none;
+    
+    .sort-button, .filter-button {
+        background-color: white;
+        color: black;
+        margin: 0px;
         cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    
+    .sort-button:hover, .filter-button:hover {
+        background-color: #e9ecef;
+        border-color: #942509;
+        color: #942509;
     }
 
-    .sort-dropdown-content {
+    .sort-dropdown-content, .filter-dropdown-content, .date-range-content {
         display: none;
         position: absolute;
         background-color: white;
         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         z-index: 1;
         min-width: 160px;
+        border-radius: 4px;
     }
-
-    .sort-dropdown.active .sort-dropdown-content {
+    
+    .sort-dropdown.active .sort-dropdown-content,
+    .filter-dropdown.active .filter-dropdown-content,
+    .date-range-dropdown.active .date-range-content {
         display: block;
     }
-
-    .sort-dropdown-content a {
+    
+    .sort-dropdown-content a, .filter-dropdown-content a {
         color: black;
         padding: 8px 12px;
         text-decoration: none;
         display: block;
         transition: background-color 0.3s;
+        font-weight: normal;
     }
-
-    .sort-dropdown-content a:hover {
+    
+    .sort-dropdown-content a:hover, .filter-dropdown-content a:hover {
         background-color: #f1f1f1;
     }
-
-    .current-sort {
+    
+    .current-sort, .current-filter {
         font-weight: bold;
         color: #942509;
+        background-color: #e7f3ff;
+    }
+    
+    /* Date range specific styles */
+    .date-range-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        z-index: 1;
+        padding: 15px;
+        min-width: 250px;
+        border-radius: 4px;
+    }
+    
+    .date-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .date-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .date-input-group label {
+        font-size: 0.9em;
+        color: #666;
+    }
+    
+    .date-input-group input[type="date"] {
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .date-range-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .date-range-buttons button.cancel {
+        color: black; 
     }
 
+    .date-range-buttons button {
+        flex: 1;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .date-range-buttons button.apply {
+        background-color: #942509;
+        color: white;
+        border-color: #942509;
+    }
+    
+    .date-range-buttons button:hover {
+        background-color: #6b6360;
+        border-color: #6b6360;
+        color: white;
+    }
+    
+    .active-date-range {
+        font-size: 0.8em;
+        color: #942509;
+        margin-top: 5px;
+    }
+    
+    /* Pagination styles */
+    .pagination-container a {
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        background-color: #942509;
+        color: white;
+        transition: background-color 0.3s;
+    }
+    
+    .pagination-container a:hover {
+        background-color: #6b6360;
+    }
+    
+    .current-page {
+        color: #333;
+        border: 1px solid #dee2e6;
+    }
+    
     /* Scrollbar styles */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
-
+    
     ::-webkit-scrollbar-thumb {
         background-color: #942509;
         border-radius: 10px;
     }
-
+    
     ::-webkit-scrollbar-track {
         background-color: #f1f1f1;
         border-radius: 10px;
     }
-
+    
     * {
         scrollbar-width: thin;
         scrollbar-color: #942509 #f1f1f1;
@@ -283,7 +390,7 @@
     <div class="account-container">
         <h1>Account</h1>
         
-        <!-- Tabs for Account Details -->
+        <!-- Tabs for user's account -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
                 <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="false">View History</a>
@@ -291,6 +398,8 @@
             <li class="nav-item">
                 <a class="nav-link active" id="update-tab" data-toggle="tab" href="#update" role="tab" aria-controls="update" aria-selected="true">Update Details</a>
             </li>
+
+            <!-- Admin Tab for staff/admins only -->
             {% if user.is_staff %}
             <li class="nav-item">
                 <a class="nav-link" id="admin-tab" data-toggle="tab" href="#admin" role="tab" aria-controls="admin" aria-selected="false">Admin Dashboard</a>
@@ -321,6 +430,7 @@
                 </div>
             </div>
             
+            <!-- Personal History Tab -->
             <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
                 <div class="upload-table-container">
                     {% if uploaded_images %}
@@ -332,19 +442,19 @@
                                     </th>
                                     <th>
                                         Result
-                                        <div class="sort-dropdown">
-                                            <button class="sort-button" onclick="toggleSort(event, this)">
-                                                <i class="fas fa-sort"></i>
+                                        <div class="filter-dropdown">
+                                            <button class="filter-button" onclick="toggleFilter(event, this)">
+                                                <i class="fas fa-filter"></i>
                                             </button>
-                                            <div class="sort-dropdown-content">
-                                                <a href="?sort=result" {% if sort == 'result' %}class="current-sort"{% endif %}>
-                                                    <i class="fas fa-sort-up"></i> Sort Ascending
+                                            <div class="filter-dropdown-content">
+                                                <a href="?filter=all" {% if not filter or filter == 'all' %}class="current-filter"{% endif %}>
+                                                    <i class="fas fa-list"></i> Show All
                                                 </a>
-                                                <a href="?sort=-result" {% if sort == '-result' %}class="current-sort"{% endif %}>
-                                                    <i class="fas fa-sort-down"></i> Sort Descending
+                                                <a href="?filter=mange" {% if filter == 'mange' %}class="current-filter"{% endif %}>
+                                                    <i class="fas fa-exclamation-circle"></i> Mange Only
                                                 </a>
-                                                <a href="?sort=default" {% if not sort %}class="current-sort"{% endif %}>
-                                                    <i class="fas fa-times"></i> Default Order
+                                                <a href="?filter=normal" {% if filter == 'normal' %}class="current-filter"{% endif %}>
+                                                    <i class="fas fa-check-circle"></i> Normal Only
                                                 </a>
                                             </div>
                                         </div>
@@ -357,16 +467,47 @@
                                             </button>
                                             <div class="sort-dropdown-content">
                                                 <a href="?sort=date_uploaded" {% if sort == 'date_uploaded' %}class="current-sort"{% endif %}>
-                                                    <i class="fas fa-sort-up"></i> Sort Ascending
+                                                    <i class="fas fa-sort-up"></i> Sort Oldest
                                                 </a>
                                                 <a href="?sort=-date_uploaded" {% if sort == '-date_uploaded' %}class="current-sort"{% endif %}>
-                                                    <i class="fas fa-sort-down"></i> Sort Descending
+                                                    <i class="fas fa-sort-down"></i> Sort Newest
                                                 </a>
                                                 <a href="?sort=default" {% if not sort %}class="current-sort"{% endif %}>
                                                     <i class="fas fa-times"></i> Default Order
                                                 </a>
                                             </div>
                                         </div>
+                                        <!-- Date picker filter -->
+                                        <div class="date-range-dropdown">
+                                            <button class="filter-button" onclick="toggleDateRange(event, this)">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                            <div class="date-range-content">
+                                                <div class="date-inputs">
+                                                    <div class="date-input-group">
+                                                        <label for="start_date">Start Date</label>
+                                                        <input type="date" id="start_date" name="start_date" 
+                                                               value="{{ start_date|date:'Y-m-d' }}"
+                                                               max="{{ today|date:'Y-m-d' }}">
+                                                    </div>
+                                                    <div class="date-input-group">
+                                                        <label for="end_date">End Date</label>
+                                                        <input type="date" id="end_date" name="end_date" 
+                                                               value="{{ end_date|date:'Y-m-d' }}"
+                                                               max="{{ today|date:'Y-m-d' }}">
+                                                    </div>
+                                                </div>
+                                                <div class="date-range-buttons">
+                                                    <button class="cancel" onclick="clearDateRange()">Clear</button>
+                                                    <button class="apply" onclick="applyDateRange()">Apply</button>
+                                                </div>
+                                                {% if start_date and end_date %}
+                                                <div class="active-date-range">
+                                                    Filtered: {{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>                                         
                                     </th>
                                     <th>Actions</th>
                                 </tr>
@@ -390,11 +531,35 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                    {% else %}
-                        <div class="alert alert-info text-center">
-                            You have no images uploaded. Create a post <a href="{% url 'image_recognition:upload' %}">here</a>.
+
+                        <!-- Pagination Code-->
+                        {% if uploaded_images.paginator.num_pages > 1 %}
+                        <div class="pagination-container" style="display: flex; justify-content: center; margin-top: 20px; gap: 10px;">
+                            {% if uploaded_images.has_previous %}
+                                <a href="{{ request.path }}?page=1{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+                                class="btn btn-primary btn-sm">&laquo; First</a>
+                                <a href="{{ request.path }}?page={{ uploaded_images.previous_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+                                class="btn btn-primary btn-sm">Previous</a>
+                            {% endif %}
+
+                            <span class="current-page" style="padding: 5px 10px; background-color: #f8f9fa; border-radius: 4px;">
+                                Page {{ uploaded_images.number }} of {{ uploaded_images.paginator.num_pages }}
+                            </span>
+
+                            {% if uploaded_images.has_next %}
+                                <a href="{{ request.path }}?page={{ uploaded_images.next_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+                                class="btn btn-primary btn-sm">Next</a>
+                                <a href="{{ request.path }}?page={{ uploaded_images.paginator.num_pages }}{% if sort %}&sort={{ sort }}{% endif %}{% if filter %}&filter={{ filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" 
+                                class="btn btn-primary btn-sm">Last &raquo;</a>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                        {% endif %}
+                        
+                        {% else %}
+                            <div class="alert alert-info text-center">
+                                You have no images uploaded. Create a post <a href="{% url 'image_recognition:upload' %}">here</a>.
+                            </div>
+                        {% endif %}
                 </div>
             </div>
 
@@ -406,7 +571,8 @@
                 <b><p>This page should only be accessible and seen by a staff/admin user. If not, please contact the website administrators.</p></b>
                 
                 <div class="user-count stat-text">           
-                    Registered Users: {% get_user_count %}             
+                    Registered Users: {% get_user_count %} <br>
+                    Total Uploaded Images: {% get_image_count %}
                 </div>
 
                 <div class="rate-limiter">
@@ -427,9 +593,23 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+    // Save the active tab in local storage
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var activeTab = $(e.target).attr('href'); // Get the href of the active tab
+        localStorage.setItem('activeTab', activeTab); // Store it in local storage
+    });
+
+    // Retrieve the active tab from local storage and set it as the active tab
+    var activeTab = localStorage.getItem('activeTab');
+    if (activeTab) {
+        $('#myTab a[href="' + activeTab + '"]').tab('show'); // Show the active tab
+    }
+
     document.addEventListener('click', function(event) {
-        if (!event.target.closest('.sort-dropdown')) {
-            document.querySelectorAll('.sort-dropdown').forEach(dropdown => {
+        if (!event.target.closest('.sort-dropdown') && 
+            !event.target.closest('.filter-dropdown') && 
+            !event.target.closest('.date-range-dropdown')) {
+            document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(dropdown => {
                 dropdown.classList.remove('active');
             });
         }
@@ -437,8 +617,8 @@
 
     function toggleSort(event, button) {
         event.stopPropagation();
-        const dropdown = button.parentElement;
-        document.querySelectorAll('.sort-dropdown').forEach(other => {
+        const dropdown = button.closest('.sort-dropdown');
+        document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(other => {
             if (other !== dropdown) {
                 other.classList.remove('active');
             }
@@ -446,25 +626,91 @@
         dropdown.classList.toggle('active');
     }
 
-    document.querySelectorAll('.sort-dropdown-content a').forEach(link => {
+    function toggleFilter(event, button) {
+        event.stopPropagation();
+        const dropdown = button.closest('.filter-dropdown');
+        document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(other => {
+            if (other !== dropdown) {
+                other.classList.remove('active');
+            }
+        });
+        dropdown.classList.toggle('active');
+    }
+
+    function toggleDateRange(event, button) {
+        event.stopPropagation();
+        const dropdown = button.closest('.date-range-dropdown');
+        document.querySelectorAll('.sort-dropdown, .filter-dropdown, .date-range-dropdown').forEach(other => {
+            if (other !== dropdown) {
+                other.classList.remove('active');
+            }
+        });
+        dropdown.classList.toggle('active');
+    }
+
+    // Helper function to maintain existing URL parameters
+    function updateUrlWithParams(newParams) {
+        const currentUrl = new URL(window.location.href);
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value === null) {
+                currentUrl.searchParams.delete(key);
+            } else {
+                currentUrl.searchParams.set(key, value);
+            }
+        });
+        return currentUrl.toString();
+    }
+
+    function applyDateRange() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        
+        if (!startDate || !endDate) {
+            alert('Please select both start and end dates');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            alert('Start date must be before end date');
+            return;
+        }
+
+        window.location.href = updateUrlWithParams({
+            'start_date': startDate,
+            'end_date': endDate
+        });
+    }
+
+    function clearDateRange() {
+        window.location.href = updateUrlWithParams({
+            'start_date': null,
+            'end_date': null
+        });
+    }
+
+    // 
+    document.querySelectorAll('.sort-dropdown-content a, .filter-dropdown-content a').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const currentUrl = new URL(window.location.href);
-            const sort = this.getAttribute('href').split('=')[1];
-            if (sort === 'default') {
-                currentUrl.searchParams.delete('sort');
+            const param = this.getAttribute('href').split('=')[0].substring(1);
+            const value = this.getAttribute('href').split('=')[1];
+            
+            const params = {};
+            if (value !== 'all' || param !== 'filter') {
+                params[param] = value;
             } else {
-                currentUrl.searchParams.set('sort', sort);
+                params['filter'] = null;
             }
-            window.location.href = currentUrl.toString();
+            
+            window.location.href = updateUrlWithParams(params);
         });
     });
 
-        // Font Awesome inclusion for icons
-        const fontAwesome = document.createElement('link');
-        fontAwesome.rel = 'stylesheet';
-        fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
-        document.head.appendChild(fontAwesome);
+    // Font Awesome inclusion for icons
+    const fontAwesome = document.createElement('link');
+    fontAwesome.rel = 'stylesheet';
+    fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+    document.head.appendChild(fontAwesome);
 </script>
 
 
